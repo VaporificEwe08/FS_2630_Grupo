@@ -7,11 +7,11 @@
 
 ## 👥 Integrantes del Equipo
 
-| Avatar | Nombre Completo | Rol Principal | GitHub / Contacto |
-| :---: | :--- | :--- | :--- |
-| <img src="https://github.com" width="40"> | **Integrante 1** | Backend Developer | [@usuario1](https://github.com) |
-| <img src="https://github.comidenticons/user2.png" width="40"> | **Integrante 2** | Frontend Developer | [@usuario2](https://github.com) |
-| <img src="https://github.comidenticons/user3.png" width="40"> | **Integrante 3** | QA & DevOps | [@usuario3](https://github.com) |
+| Avatar | Nombre Completo                      | Rol Principal   | GitHub / Contacto                                      |
+| :---: |:-------------------------------------|:----------------|:-------------------------------------------------------|
+| <img src="https://github.com" width="40"> | **Pablo Alfonso Jimenez Becerra**    | Scrum Master    | [PythonK1ller](https://github.com)                     |
+| <img src="https://github.comidenticons/user2.png" width="40"> | **Carlos Ney Bernal**                | DevOps Engineer | [VaporificEwe08](https://github.com)                   |
+| <img src="https://github.comidenticons/user3.png" width="40"> | **Lilian Andrea Chaparro Rodriguez** | QA              | [chaparrorodriguezlilianandrea-ux](https://github.com) |
 
 ---
 
