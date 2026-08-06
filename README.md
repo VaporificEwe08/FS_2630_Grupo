@@ -107,7 +107,7 @@ Entre las alternativas que se evaluarán se encuentran:
 
 - Carlos Ney - VaporificEwe08
 - Pablo Alfonso Jimenez - PythonK1ller
-- nn
+- Lilian Andrea Chaparro Rodriguez 
 
 ---
 
