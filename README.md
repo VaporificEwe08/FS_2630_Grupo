@@ -8,8 +8,95 @@ La aplicación permite a cualquier ciudadano reportar de manera rápida incidenc
 
 El objetivo es facilitar el seguimiento de los reportes y proporcionar información útil para optimizar la gestión de residuos en la ciudad.
 
+
 ---
 
+## Equipo del Proyecto
+| Nombre        | Rol                   | GitHub / Perfil |
+|--------------|-----------------------|-----------------|
+| Pablo Alfonso Jimenez Becerra | Scrum Master & Product Owner         | [@PythonK1ller](https://github.com/PythonK1ller) |
+| Carlos Ney Bernal | DevOps engineer & Configuration Manager         | [@VaporificEwe08](https://github.com/VaporificEwe08) |
+| Lilian Andrea Chaparro Rodriguez | QA lead & Sprint Planner        | github.com/usuario3 |
+
+---
+
+## Tecnologías Utilizadas
+- **Frontend:** JavaFX
+- **Backend:** Java – Spring Boot
+- **Base de Datos:** PostgreSQL
+- **IA / Data Science:** Python, Pandas, Scikit-learn
+- **DevOps:** GitHub Actions, Docker, SonarQube
+- **Control de versiones:** Git
+
+---
+
+## Estructura del Proyecto
+```text
+project-name/
+├── .github/
+│   ├── ISSUE_TEMPLATE/
+│   │   ├── bug_report.md
+│   │   ├── feature_request.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── workflows/
+│       ├── ci.yml
+│       └── cd.yml
+├── conf/
+│   ├── config.yaml
+│   └── settings.json
+├── docs/
+│   ├── api/
+│   ├── architecture/
+│   └── user_guide/
+├── jupyter/
+│   ├── notebooks/
+│   │   ├── exploration.ipynb
+│   │   └── analysis.ipynb
+│   └── datasets/
+│       ├── data1.csv
+│       └── data2.csv
+├── scripts/
+│   ├── setup.sh
+│   ├── deploy.sh
+│   └── test.sh
+├── src/
+│   ├── main/
+│   │   ├── java/ (o python/, etc. según el lenguaje)
+│   │   └── resources/
+│   ├── test/
+│   │   ├── java/ (o python/, etc. según el lenguaje)
+│   │   └── resources/
+├── temp/
+│   ├── temp_file.txt
+│   └── temp_data/
+│       ├── temp1.tmp
+│       └── temp2.tmp
+├── .gitignore
+├── README.md
+├── LICENSE
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── Dockerfile
+├── docker-compose.yml
+└── Makefile
+```
+---
+
+## Instalación y Ejecución
+**Requisitos**
+- Docker y Docker Compose
+- Git
+- Java 17+
+- Python 3.10+
+
+---
+
+## Clonar el repositorio
+```text
+git clone https://github.com/VaporificEwe08/FS_2630_Grupo.git
+cd FS_2630_Grupo
+```
+---
 # Problema
 
 Actualmente los canales de reporte presentan limitaciones como:
@@ -51,66 +138,42 @@ Desarrollar una plataforma web que permita a los ciudadanos reportar incidencias
 
 ---
 
-# Roles del sistema
+## Ejecución con Docker
+```text
+docker-compose up --build
+```
 
-## Ciudadano
-
-- Crear reportes.
-- Consultar el estado.
-- Ver reportes cercanos.
-
-## Administrador
-
-- Validar reportes.
-- Cambiar estados.
-- Gestionar usuarios.
-- Visualizar estadísticas.
+## Ejecución de pruebas
+```text
+docker-compose run backend mvn test
+docker-compose run ai-model pytest
+```
 
 ---
 
-# Tecnologías
-
-Las tecnologías que serán utilizadas para el desarrollo del proyecto se definirán durante las primeras fases del proceso de Ingeniería de Software, teniendo en cuenta los requisitos funcionales y no funcionales identificados.
-
-Entre las alternativas que se evaluarán se encuentran:
-
-- Framework para el desarrollo del frontend.
-- Framework para el desarrollo del backend.
-- Sistema gestor de bases de datos.
-- Servicio de mapas y geolocalización.
-- Plataforma para despliegue del sistema.
----  
-
-# MVP
-
-- Registro de usuarios.
-- Inicio de sesión.
-- Crear reporte.
-- Subir fotografía.
-- Obtener ubicación.
-- Mostrar reportes en un mapa.
-- Cambiar estado de un reporte.
+## Contexto Académico
+- **Asignatura:** Fundamentos de Ingeniería de Software
+- **Docente:** Fabrazio Bolaño Lopez
+- **Contacto:** fbolanol@javeriana.edu.co
 
 ---
 
-# Trabajo futuro
+## Contacto
 
-- Aplicación móvil.
-- Notificaciones Push.
-- Inteligencia Artificial para clasificación automática.
-- Detección de reportes duplicados.
-- Integración con sistemas oficiales del Distrito.
+**Equipo de desarrollo:**
 
----
+**Pablo Alfonso Jimenez Becerra**  
+Estudiante de Ingenieria de Sistemas, Pontificia Universidad Javeriana  
+📧 jimenezb_p@javeriana.edu.co  
 
-# Equipo de desarrollo
+**Carlos Ney Bernal**  
+Estudiante de Ingeniería en Sistemas, Pontificia Universidad Javeriana  
+📧 neycarlos@javeriana.edu.co  
 
-- Carlos Ney - VaporificEwe08
-- Pablo Alfonso Jimenez - PythonK1ller
-- Lilian Andrea Chaparro Rodriguez 
+**Lilian Andrea Chaparro Rodriguez**
+Estudiante de Ingenieria en Sistemas, Pontifia Universidad Javeriana
+📧 chaparrorlandrea@javeriana.edu.co
+--- 
 
----
-
-# Licencia
-
+## Licencia
 Proyecto desarrollado con fines académicos.
