@@ -163,16 +163,17 @@ docker-compose run ai-model pytest
 **Equipo de desarrollo:**
 
 **Pablo Alfonso Jimenez Becerra**  
-Estudiante de Ingenieria de Sistemas, Pontificia Universidad Javeriana  
+Estudiante de Ingeniería en Sistemas, Pontificia Universidad Javeriana    
 📧 jimenezb_p@javeriana.edu.co  
 
 **Carlos Ney Bernal**  
 Estudiante de Ingeniería en Sistemas, Pontificia Universidad Javeriana  
 📧 neycarlos@javeriana.edu.co  
 
-**Lilian Andrea Chaparro Rodriguez**
-Estudiante de Ingenieria en Sistemas, Pontifia Universidad Javeriana
-📧 chaparrorlandrea@javeriana.edu.co
+**Lilian Andrea Chaparro Rodriguez**  
+Estudiante de Ingeniería en Sistemas, Pontificia Universidad Javeriana  
+📧 chaparrorlandrea@javeriana.edu.co 
+
 --- 
 
 ## Licencia
