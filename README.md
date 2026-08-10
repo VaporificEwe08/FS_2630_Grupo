@@ -16,7 +16,7 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 |--------------|-----------------------|-----------------|
 | Pablo Alfonso Jimenez Becerra | Scrum Master & Product Owner         | [@PythonK1ller](https://github.com/PythonK1ller) |
 | Carlos Ney Bernal | DevOps engineer & Configuration Manager         | [@VaporificEwe08](https://github.com/VaporificEwe08) |
-| Lilian Andrea Chaparro Rodriguez | QA lead & Sprint Planner        | github.com/usuario3 |
+| Lilian Andrea Chaparro Rodriguez | QA lead & Sprint Planner        | [@chaparrorodriguezlilianandrea-ux](https://github.com/chaparrorodriguezlilianandrea-ux) |
 
 ---
 
