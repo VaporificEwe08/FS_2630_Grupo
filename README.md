@@ -32,7 +32,7 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 
 ## Estructura del Proyecto
 ```text
-project-name/
+EcoBogota+/
 ├── .github/
 │   ├── ISSUE_TEMPLATE/
 │   │   ├── bug_report.md
