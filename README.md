@@ -63,7 +63,7 @@ Para presentar la demo web, desde la raíz del repositorio ejecuta:
 python3 -m http.server 8000 --directory app
 ```
 
-Luego abre `http://localhost:8000`. La demo permite crear reportes, filtrarlos por estado, abrir su detalle y ver un historial. En el detalle puedes simular los avances `Recibido → En gestión → Resuelto`. Muestra tres casos ficticios iniciales y guarda los reportes y cambios únicamente en el almacenamiento de ese navegador. No envía datos a una entidad ni incluye autenticación de operadores. Para reiniciar los casos de ejemplo, borra los datos de este sitio en el navegador.
+Luego abre `http://localhost:8000`. La demo permite crear reportes con un código local, buscarlos por código, ubicación o descripción, filtrarlos por estado y abrir su historial. En el detalle puedes simular los avances `Recibido → En gestión → Resuelto`. Muestra tres casos ficticios iniciales y guarda los reportes y cambios únicamente en el almacenamiento de ese navegador. El código de seguimiento funciona solo dentro de esta demo local: no consulta un servicio compartido. No envía datos a una entidad ni incluye autenticación de operadores. Para reiniciar los casos de ejemplo, borra los datos de este sitio en el navegador.
 
 Todavía no existe un backend, un proyecto compilable ni una configuración de Docker.
 

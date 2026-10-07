@@ -19,10 +19,18 @@ const now = Date.now();
 const hoursAgo = (hours) => new Date(now - hours * 60 * 60 * 1000).toISOString();
 const demoEvent = (status, hours) => ({ status, at: hoursAgo(hours), actor: "Datos de ejemplo" });
 const exampleReports = [
-  { id: "demo-1", type: "CONTENEDOR_LLENO", location: "Chapinero · Calle 60 con Carrera 7", description: "El contenedor de la esquina está lleno.", status: "RECIBIDO", createdAt: hoursAgo(2), history: [demoEvent("RECIBIDO", 2)] },
-  { id: "demo-2", type: "ESCOMBROS", location: "Teusaquillo · Carrera 24 con Calle 45", description: "Hay escombros junto al andén.", status: "EN_GESTION", createdAt: hoursAgo(25), history: [demoEvent("RECIBIDO", 25), demoEvent("EN_GESTION", 22)] },
-  { id: "demo-3", type: "BASURA_NO_RECOGIDA", location: "Suba · Avenida Boyacá con Calle 127", description: "Bolsas de residuos acumuladas desde ayer.", status: "RESUELTO", createdAt: hoursAgo(72), history: [demoEvent("RECIBIDO", 72), demoEvent("EN_GESTION", 48), demoEvent("RESUELTO", 20)] },
+  { id: "demo-1", reference: "ECO-0101", type: "CONTENEDOR_LLENO", location: "Chapinero · Calle 60 con Carrera 7", description: "El contenedor de la esquina está lleno.", status: "RECIBIDO", createdAt: hoursAgo(2), history: [demoEvent("RECIBIDO", 2)] },
+  { id: "demo-2", reference: "ECO-0102", type: "ESCOMBROS", location: "Teusaquillo · Carrera 24 con Calle 45", description: "Hay escombros junto al andén.", status: "EN_GESTION", createdAt: hoursAgo(25), history: [demoEvent("RECIBIDO", 25), demoEvent("EN_GESTION", 22)] },
+  { id: "demo-3", reference: "ECO-0103", type: "BASURA_NO_RECOGIDA", location: "Suba · Avenida Boyacá con Calle 127", description: "Bolsas de residuos acumuladas desde ayer.", status: "RESUELTO", createdAt: hoursAgo(72), history: [demoEvent("RECIBIDO", 72), demoEvent("EN_GESTION", 48), demoEvent("RESUELTO", 20)] },
 ];
+
+function referenceForId(id) {
+  return `ECO-${id.replace(/[^a-z0-9]/gi, "").slice(-8).toUpperCase().padStart(8, "0")}`;
+}
+
+function searchText(value) {
+  return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+}
 
 function loadReports() {
   try {
@@ -36,17 +44,19 @@ function loadReports() {
 }
 
 function normalizeReport(report) {
+  const reference = typeof report.reference === "string" && /^ECO-[A-Z0-9]{4,12}$/.test(report.reference)
+    ? report.reference : referenceForId(report.id);
   if (Array.isArray(report.history) && report.history.length > 0) {
     const history = report.history.filter((event) => event && statuses[event.status] &&
       (event.at === null || !Number.isNaN(Date.parse(event.at))) && typeof event.actor === "string");
-    if (history.length > 0 && history.at(-1).status === report.status) return { ...report, history };
+    if (history.length > 0 && history.at(-1).status === report.status) return { ...report, reference, history };
   }
   // Los reportes guardados por la demo anterior no registraban las fechas de transición.
   const history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
   for (const status of statusOrder.slice(1, statusOrder.indexOf(report.status) + 1)) {
     history.push({ status, at: null, actor: "Estado anterior" });
   }
-  return { ...report, history };
+  return { ...report, reference, history };
 }
 
 function isValidReport(report) {
@@ -86,6 +96,7 @@ function reportCard(report) {
   card.append(top);
   card.append(element("p", "report-description", report.description));
   const meta = element("div", "report-meta");
+  meta.append(element("span", "report-reference", report.reference));
   meta.append(element("span", "", `⌖ ${report.location}`));
   meta.append(element("span", "", formatDate(report.createdAt)));
   card.append(meta);
@@ -99,6 +110,7 @@ function reportCard(report) {
 let reports = loadReports();
 const reportList = document.getElementById("reportList");
 const filter = document.getElementById("statusFilter");
+const search = document.getElementById("reportSearch");
 const form = document.getElementById("reportForm");
 const message = document.getElementById("formMessage");
 const dialog = document.getElementById("reportDialog");
@@ -114,6 +126,7 @@ function renderDetail(report) {
   summary.append(element("p", "detail-description", report.description));
   const metadata = element("dl", "detail-meta");
   for (const [label, value] of [
+    ["Código", report.reference],
     ["Incidencia", types[report.type].label],
     ["Ubicación", report.location],
     ["Creado", formatDate(report.createdAt)],
@@ -158,10 +171,17 @@ function render() {
   document.getElementById("openCount").textContent = String(reports.filter((report) => report.status !== "RESUELTO").length);
   document.getElementById("resolvedCount").textContent = String(reports.filter((report) => report.status === "RESUELTO").length);
 
-  const visible = reports.filter((report) => filter.value === "TODOS" || report.status === filter.value);
+  const query = searchText(search.value.trim());
+  const visible = reports.filter((report) => {
+    if (filter.value !== "TODOS" && report.status !== filter.value) return false;
+    return [report.reference, types[report.type].label, report.location, report.description]
+      .some((value) => searchText(value).includes(query));
+  });
   reportList.replaceChildren();
   if (visible.length === 0) {
-    reportList.append(element("p", "empty-state", "No hay reportes con este estado."));
+    reportList.append(element("p", "empty-state", query
+      ? "No hay reportes que coincidan con la búsqueda."
+      : "No hay reportes con este estado."));
   } else {
     reportList.append(...visible.map(reportCard));
   }
@@ -183,6 +203,7 @@ form.addEventListener("submit", (event) => {
     id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
     type, location, description, status: "RECIBIDO", createdAt: new Date().toISOString(),
   };
+  report.reference = referenceForId(report.id);
   report.history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
   const updated = [report, ...reports];
   if (!saveReports(updated)) {
@@ -192,12 +213,14 @@ form.addEventListener("submit", (event) => {
   reports = updated;
   form.reset();
   filter.value = "TODOS";
+  search.value = "";
   render();
   message.classList.add("success");
-  message.textContent = "Reporte creado. Ya aparece en la lista con estado Recibido.";
+  message.textContent = `Reporte ${report.reference} creado con estado Recibido.`;
 });
 
 filter.addEventListener("change", render);
+search.addEventListener("input", render);
 document.getElementById("closeDialog").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => { selectedReportId = null; });
 advanceButton.addEventListener("click", () => {
