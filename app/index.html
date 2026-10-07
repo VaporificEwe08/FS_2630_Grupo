@@ -69,6 +69,23 @@
               <label for="reportLocation">Ubicación aproximada <span aria-hidden="true">*</span></label>
               <input id="reportLocation" name="location" type="text" maxlength="100" placeholder="Ej. Calle 45 con Carrera 7" required />
             </div>
+            <div class="coordinate-block">
+              <div class="coordinate-heading">
+                <span>Coordenadas opcionales</span>
+                <button id="detectLocation" type="button">Usar mi ubicación</button>
+              </div>
+              <div class="coordinate-fields">
+                <div class="field">
+                  <label for="reportLatitude">Latitud</label>
+                  <input id="reportLatitude" name="latitude" type="number" inputmode="decimal" step="any" min="-90" max="90" placeholder="4.650000" />
+                </div>
+                <div class="field">
+                  <label for="reportLongitude">Longitud</label>
+                  <input id="reportLongitude" name="longitude" type="number" inputmode="decimal" step="any" min="-180" max="180" placeholder="-74.080000" />
+                </div>
+              </div>
+              <p class="location-message" id="locationMessage" role="status" aria-live="polite">Se guardarán solo en este navegador al publicar el reporte.</p>
+            </div>
             <div class="field">
               <label for="reportDescription">Descripción <span aria-hidden="true">*</span></label>
               <textarea id="reportDescription" name="description" rows="4" maxlength="300" placeholder="Describe el problema para que sea fácil identificarlo" required></textarea>

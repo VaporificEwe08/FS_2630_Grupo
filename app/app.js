@@ -32,6 +32,12 @@ function searchText(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 }
 
+function validCoordinates(coordinates) {
+  return coordinates && Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude) &&
+    coordinates.latitude >= -90 && coordinates.latitude <= 90 &&
+    coordinates.longitude >= -180 && coordinates.longitude <= 180;
+}
+
 function loadReports() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -46,17 +52,18 @@ function loadReports() {
 function normalizeReport(report) {
   const reference = typeof report.reference === "string" && /^ECO-[A-Z0-9]{4,12}$/.test(report.reference)
     ? report.reference : referenceForId(report.id);
+  const coordinates = validCoordinates(report.coordinates) ? report.coordinates : null;
   if (Array.isArray(report.history) && report.history.length > 0) {
     const history = report.history.filter((event) => event && statuses[event.status] &&
       (event.at === null || !Number.isNaN(Date.parse(event.at))) && typeof event.actor === "string");
-    if (history.length > 0 && history.at(-1).status === report.status) return { ...report, reference, history };
+    if (history.length > 0 && history.at(-1).status === report.status) return { ...report, reference, coordinates, history };
   }
   // Los reportes guardados por la demo anterior no registraban las fechas de transición.
   const history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
   for (const status of statusOrder.slice(1, statusOrder.indexOf(report.status) + 1)) {
     history.push({ status, at: null, actor: "Estado anterior" });
   }
-  return { ...report, reference, history };
+  return { ...report, reference, coordinates, history };
 }
 
 function isValidReport(report) {
@@ -117,6 +124,8 @@ const dialog = document.getElementById("reportDialog");
 const detail = document.getElementById("reportDetail");
 const detailMessage = document.getElementById("detailMessage");
 const advanceButton = document.getElementById("advanceStatus");
+const detectLocationButton = document.getElementById("detectLocation");
+const locationMessage = document.getElementById("locationMessage");
 let selectedReportId = null;
 
 function renderDetail(report) {
@@ -125,12 +134,16 @@ function renderDetail(report) {
   summary.append(element("span", `status ${statuses[report.status].className}`, statuses[report.status].label));
   summary.append(element("p", "detail-description", report.description));
   const metadata = element("dl", "detail-meta");
-  for (const [label, value] of [
+  const fields = [
     ["Código", report.reference],
     ["Incidencia", types[report.type].label],
     ["Ubicación", report.location],
     ["Creado", formatDate(report.createdAt)],
-  ]) {
+  ];
+  if (validCoordinates(report.coordinates)) {
+    fields.splice(3, 0, ["Coordenadas", `${report.coordinates.latitude.toFixed(6)}, ${report.coordinates.longitude.toFixed(6)}`]);
+  }
+  for (const [label, value] of fields) {
     const row = element("div", "detail-meta-row");
     row.append(element("dt", "", label), element("dd", "", value));
     metadata.append(row);
@@ -192,6 +205,8 @@ form.addEventListener("submit", (event) => {
   const type = form.elements.type.value;
   const location = form.elements.location.value.trim();
   const description = form.elements.description.value.trim();
+  const latitudeText = form.elements.latitude.value.trim();
+  const longitudeText = form.elements.longitude.value.trim();
   message.classList.remove("success");
 
   if (!types[type] || !location || !description) {
@@ -199,9 +214,18 @@ form.addEventListener("submit", (event) => {
     return;
   }
 
+  let coordinates = null;
+  if (latitudeText || longitudeText) {
+    coordinates = { latitude: Number(latitudeText), longitude: Number(longitudeText) };
+    if (!latitudeText || !longitudeText || !validCoordinates(coordinates)) {
+      message.textContent = "Ingresa latitud y longitud válidas, o deja ambas vacías.";
+      return;
+    }
+  }
+
   const report = {
     id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-    type, location, description, status: "RECIBIDO", createdAt: new Date().toISOString(),
+    type, location, description, coordinates, status: "RECIBIDO", createdAt: new Date().toISOString(),
   };
   report.reference = referenceForId(report.id);
   report.history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
@@ -212,6 +236,7 @@ form.addEventListener("submit", (event) => {
   }
   reports = updated;
   form.reset();
+  locationMessage.textContent = "Se guardarán solo en este navegador al publicar el reporte.";
   filter.value = "TODOS";
   search.value = "";
   render();
@@ -221,6 +246,32 @@ form.addEventListener("submit", (event) => {
 
 filter.addEventListener("change", render);
 search.addEventListener("input", render);
+detectLocationButton.addEventListener("click", () => {
+  if (typeof navigator === "undefined" || !navigator.geolocation) {
+    locationMessage.textContent = "Este navegador no ofrece ubicación. Puedes escribir las coordenadas manualmente.";
+    return;
+  }
+  detectLocationButton.disabled = true;
+  locationMessage.textContent = "Consultando la ubicación del dispositivo…";
+  navigator.geolocation.getCurrentPosition(
+    ({ coords }) => {
+      detectLocationButton.disabled = false;
+      const coordinates = { latitude: coords.latitude, longitude: coords.longitude };
+      if (!validCoordinates(coordinates)) {
+        locationMessage.textContent = "El dispositivo devolvió coordenadas inválidas.";
+        return;
+      }
+      form.elements.latitude.value = coordinates.latitude.toFixed(6);
+      form.elements.longitude.value = coordinates.longitude.toFixed(6);
+      locationMessage.textContent = "Coordenadas listas. Se guardarán aquí solo si publicas el reporte.";
+    },
+    () => {
+      detectLocationButton.disabled = false;
+      locationMessage.textContent = "No se pudo obtener la ubicación. Puedes escribir las coordenadas manualmente.";
+    },
+    { enableHighAccuracy: false, timeout: 10000 },
+  );
+});
 document.getElementById("closeDialog").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => { selectedReportId = null; });
 advanceButton.addEventListener("click", () => {

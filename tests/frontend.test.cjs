@@ -36,16 +36,17 @@ function makeStorage(initial = {}, failWrites = false) {
   };
 }
 
-function boot(storage = makeStorage()) {
+function boot(storage = makeStorage(), geolocation = null) {
   const ids = Object.fromEntries([
     'reportList', 'statusFilter', 'reportSearch', 'reportForm', 'formMessage',
     'totalCount', 'openCount', 'resolvedCount', 'reportDialog', 'reportDetail',
-    'detailMessage', 'advanceStatus', 'closeDialog',
+    'detailMessage', 'advanceStatus', 'closeDialog', 'detectLocation', 'locationMessage',
   ].map((id) => [id, new FakeElement()]));
   ids.statusFilter.value = 'TODOS';
   ids.reportSearch.value = '';
   ids.reportForm.elements = {
     type: { value: '' }, location: { value: '' }, description: { value: '' },
+    latitude: { value: '' }, longitude: { value: '' },
   };
   ids.reportForm.reset = () => {
     for (const field of Object.values(ids.reportForm.elements)) field.value = '';
@@ -57,6 +58,7 @@ function boot(storage = makeStorage()) {
   const context = vm.createContext({
     document, localStorage: storage, Date, Intl, Math, String, JSON, Number,
     crypto: { randomUUID: () => '00000000-0000-4000-8000-12345678abcd' },
+    navigator: geolocation ? { geolocation } : {},
   });
   vm.runInContext(source, context);
   return { ids, storage, context };
@@ -140,4 +142,54 @@ test('migra reportes anteriores sin inventar fechas de transición', () => {
   assert.match(timeline.children[2].children[1].children[1].textContent, /Fecha no registrada/);
   assert.equal(ids.advanceStatus.hidden, true);
   assert.match(ids.reportDetail.children[0].children[2].children[0].children[1].textContent, /^ECO-/);
+});
+
+test('guarda coordenadas válidas y rechaza pares incompletos o fuera de rango', () => {
+  const { ids, storage } = boot();
+  ids.reportForm.elements.latitude.value = '4.65';
+  submit(ids, 'OTRO', 'Calle 50', 'Residuos en el andén');
+  assert.equal(storage.getItem(storageKey), null);
+  assert.match(ids.formMessage.textContent, /latitud y longitud/);
+
+  ids.reportForm.elements.longitude.value = '-200';
+  submit(ids, 'OTRO', 'Calle 50', 'Residuos en el andén');
+  assert.equal(storage.getItem(storageKey), null);
+
+  ids.reportForm.elements.longitude.value = '-74.08';
+  submit(ids, 'OTRO', 'Calle 50', 'Residuos en el andén');
+  const saved = JSON.parse(storage.getItem(storageKey));
+  assert.equal(saved[0].coordinates.latitude, 4.65);
+  assert.equal(saved[0].coordinates.longitude, -74.08);
+  cards(ids)[0].children.at(-1).handlers.click();
+  const metadata = ids.reportDetail.children[0].children[2];
+  assert.equal(metadata.children[3].children[0].textContent, 'Coordenadas');
+  const reloaded = boot(storage);
+  cards(reloaded.ids)[0].children.at(-1).handlers.click();
+  assert.equal(reloaded.ids.reportDetail.children[0].children[2].children[3].children[0].textContent, 'Coordenadas');
+});
+
+test('solo pide geolocalización al pulsar el botón y permite continuar si no está disponible', () => {
+  let requests = 0;
+  const geolocation = {
+    getCurrentPosition(success) {
+      requests += 1;
+      success({ coords: { latitude: 4.65, longitude: -74.08 } });
+    },
+  };
+  const { ids } = boot(makeStorage(), geolocation);
+  assert.equal(requests, 0);
+  ids.detectLocation.handlers.click();
+  assert.equal(requests, 1);
+  assert.equal(ids.reportForm.elements.latitude.value, '4.650000');
+  assert.equal(ids.reportForm.elements.longitude.value, '-74.080000');
+  assert.equal(ids.detectLocation.disabled, false);
+
+  const withoutLocation = boot();
+  withoutLocation.ids.detectLocation.handlers.click();
+  assert.match(withoutLocation.ids.locationMessage.textContent, /manualmente/);
+
+  const denied = boot(makeStorage(), { getCurrentPosition(_success, error) { error({ code: 1 }); } });
+  denied.ids.detectLocation.handlers.click();
+  assert.equal(denied.ids.detectLocation.disabled, false);
+  assert.match(denied.ids.locationMessage.textContent, /manualmente/);
 });

@@ -4,6 +4,7 @@ Este archivo registra cambios reales del proyecto. Las funcionalidades futuras e
 
 ## Sin publicar
 
+- Se añadió captura opcional de coordenadas manuales o por geolocalización del navegador en la demo.
 - Se activó CI para comprobar la sintaxis y probar los flujos de la demo web con Node.js.
 - Se añadieron códigos locales de seguimiento y búsqueda por código, ubicación o descripción en la demo.
 - Se añadió el detalle de cada reporte, un historial de estados y la simulación local de su avance.
