@@ -2,9 +2,9 @@
 
 ## Descripción
 
-EcoAlerta Bogotá es una plataforma web diseñada para mejorar la comunicación entre la ciudadanía y las entidades encargadas de la recolección de residuos sólidos.
+EcoBogotá+ es un proyecto de plataforma web para mejorar la comunicación entre la ciudadanía y las entidades encargadas de la recolección de residuos sólidos.
 
-La aplicación permite a cualquier ciudadano reportar de manera rápida incidencias relacionadas con basura no recogida, contenedores llenos, escombros y otros problemas mediante fotografías, geolocalización y descripciones.
+La aplicación prevista permitirá a cualquier ciudadano reportar incidencias relacionadas con basura no recogida, contenedores llenos, escombros y otros problemas mediante fotografías, geolocalización y descripciones.
 
 El objetivo es facilitar el seguimiento de los reportes y proporcionar información útil para optimizar la gestión de residuos en la ciudad.
 
@@ -21,73 +21,51 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 ---
 
 ## Tecnologías Utilizadas
-- **Frontend:** JavaFX
-- **Backend:** Java – Spring Boot
-- **Base de Datos:** PostgreSQL
-- **IA / Data Science:** Python, Pandas, Scikit-learn
-- **DevOps:** GitHub Actions, Docker, SonarQube
+- **Interfaz del MVP:** web en navegador; la tecnología de frontend aún no está elegida.
+- **Backend propuesto:** Java 17 y Spring Boot.
+- **Base de datos propuesta:** PostgreSQL.
+- **Tecnologías previstas para fases posteriores:** Python, Pandas, Scikit-learn, Docker y SonarQube.
 - **Control de versiones:** Git
+
+Estas tecnologías describen la dirección prevista. Hay una demo estática del frontend, pero todavía no hay backend ni persistencia compartida. El [alcance del primer incremento](docs/architecture/mvp.md) separa el MVP de las funciones posteriores.
 
 ---
 
 ## Estructura del Proyecto
 ```text
-EcoBogota+/
+FS_2630_Grupo/
 ├── .github/
-│   ├── ISSUE_TEMPLATE/
-│   │   ├── bug_report.md
-│   │   ├── feature_request.md
-│   ├── PULL_REQUEST_TEMPLATE.md
+│   ├── ISSUE/
+│   ├── PULL_REQUEST.md
 │   └── workflows/
-│       ├── ci.yml
-│       └── cd.yml
+├── app/                 # Demo web estática
 ├── conf/
-│   ├── config.yaml
-│   └── settings.json
 ├── docs/
 │   ├── api/
 │   ├── architecture/
 │   └── user_guide/
-├── jupyter/
-│   ├── notebooks/
-│   │   ├── exploration.ipynb
-│   │   └── analysis.ipynb
-│   └── datasets/
-│       ├── data1.csv
-│       └── data2.csv
-├── scripts/
-│   ├── setup.sh
-│   ├── deploy.sh
-│   └── test.sh
 ├── src/
 │   ├── main/
-│   │   ├── java/ (o python/, etc. según el lenguaje)
-│   │   └── resources/
-│   ├── test/
-│   │   ├── java/ (o python/, etc. según el lenguaje)
-│   │   └── resources/
+│   └── test/
 ├── temp/
-│   ├── temp_file.txt
-│   └── temp_data/
-│       ├── temp1.tmp
-│       └── temp2.tmp
-├── .gitignore
 ├── README.md
-├── LICENSE
 ├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── Dockerfile
-├── docker-compose.yml
-└── Makefile
+└── BOILERPLATE.md
 ```
+`app/` contiene una demo funcional en el navegador. `src/main/` todavía no tiene backend. Los archivos de CI/CD y las plantillas de GitHub están vacíos.
 ---
 
-## Instalación y Ejecución
-**Requisitos**
-- Docker y Docker Compose
-- Git
-- Java 17+
-- Python 3.10+
+## Estado de ejecución
+
+Para presentar la demo web, desde la raíz del repositorio ejecuta:
+
+```bash
+python3 -m http.server 8000 --directory app
+```
+
+Luego abre `http://localhost:8000`. La demo permite crear reportes y filtrarlos por estado. Muestra tres casos ficticios iniciales y guarda los reportes nuevos únicamente en el almacenamiento de ese navegador. No envía datos a una entidad ni modifica estados. Para reiniciar los casos de ejemplo, borra los datos de este sitio en el navegador.
+
+Todavía no existe un backend, un proyecto compilable ni una configuración de Docker.
 
 ---
 
@@ -124,7 +102,7 @@ Desarrollar una plataforma web que permita a los ciudadanos reportar incidencias
 
 ---
 
-# Características
+# Funcionalidades previstas
 
 - Registro e inicio de sesión.
 - Reporte de incidencias.
@@ -135,19 +113,6 @@ Desarrollar una plataforma web que permita a los ciudadanos reportar incidencias
 - Panel administrativo.
 - Gestión de estados.
 - Notificaciones.
-
----
-
-## Ejecución con Docker
-```text
-docker-compose up --build
-```
-
-## Ejecución de pruebas
-```text
-docker-compose run backend mvn test
-docker-compose run ai-model pytest
-```
 
 ---
 

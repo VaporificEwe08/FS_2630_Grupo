@@ -1,0 +1,14 @@
+# Grafo local de análisis (no incluir en commits)
+graphify-out/
+
+# Archivos generados localmente
+.gradle/
+build/
+target/
+*.class
+
+# Entornos y configuraciones locales
+.env
+.env.*
+!.env.example
+.idea/workspace.xml

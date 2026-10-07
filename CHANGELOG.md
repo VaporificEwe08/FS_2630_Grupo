@@ -1,58 +1,15 @@
-# Changelog
+# Registro de cambios
 
-Todos los cambios notables en este proyecto serán documentados en este archivo.
+Este archivo registra cambios reales del proyecto. Las funcionalidades futuras están descritas en el [README](README.md) y el [alcance del primer incremento](docs/architecture/mvp.md).
 
-El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/) y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
+## Sin publicar
 
-## [EcoBogota+] - Dev Team
-### Notes
-- .
+- Se añadió una demo web estática para crear y filtrar reportes locales durante la presentación.
+- Se definió el alcance inicial del flujo de reportes y sus criterios de aceptación.
+- Se eligió una interfaz web en navegador para el MVP.
+- Se corrigió el README para reflejar la estructura y el estado actual del repositorio.
+- Se añadió un `.gitignore` para archivos generados y configuraciones locales.
 
----
-# Cambios Semanales [Agto. 10 - 15 ]
-Se establecio que el desarrollo del taller de Git-GitHub se realizaria en el mismo repositorio
-que el proyecto para crear las primeras versiones del proyecto, contando con la aprovacion del profesor.
-### 🚀 Añadido (Added)
-- Se implemento la wiki del proyecto.
-- BOILERPLATE.md se añadio al proyecto.
+## Inicio del repositorio (agosto de 2026)
 
-### 🔄 Cambiado (Changed)
-- Se cambio el archivo de pruebas en src/test.
-- .
-
-### ⚠️ Depreciado (Deprecated)
-- Funcionalidad X que será eliminada en futuras versiones.
-
-### 🗑️ Eliminado (Removed)
-- Funcionalidad Y que fue removida en esta versión.
-
-### 🐛 Corregido (Fixed)
-- Solución al error #123 en el módulo Z.
-- Corrección de fallo de rendimiento o estabilidad.
-
-### 🔒 Seguridad (Security)
-- Parche de vulnerabilidad o actualización de dependencias de seguridad.
-
----
-## [1.0.0] - YYYY-MM-DD
-
-### 🚀 Añadido (Added)
-- Nueva funcionalidad principal A.
-- Nueva funcionalidad principal B.
-
-### 🔄 Cambiado (Changed)
-- Modificación en el comportamiento de una función existente.
-- Actualización de interfaz de usuario o estilos.
-
-### ⚠️ Depreciado (Deprecated)
-- Funcionalidad X que será eliminada en futuras versiones.
-
-### 🗑️ Eliminado (Removed)
-- Funcionalidad Y que fue removida en esta versión.
-
-### 🐛 Corregido (Fixed)
-- Solución al error #123 en el módulo Z.
-- Corrección de fallo de rendimiento o estabilidad.
-
-### 🔒 Seguridad (Security)
-- Parche de vulnerabilidad o actualización de dependencias de seguridad.
+- Se creó la documentación inicial y la estructura de directorios del proyecto.

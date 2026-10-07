@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#124734" />
+    <meta name="description" content="Prototipo local de reportes de residuos de EcoBogotá+." />
+    <title>EcoBogotá+ · Reportes ciudadanos</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="app.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-inner">
+        <a class="brand" href="#inicio" aria-label="EcoBogotá+, volver al inicio">
+          <span class="brand-mark" aria-hidden="true">E<span>+</span></span>
+          <span>EcoBogotá<span class="brand-plus">+</span></span>
+        </a>
+        <nav aria-label="Navegación principal">
+          <a href="#reportar">Crear reporte</a>
+          <a href="#reportes">Ver reportes</a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="inicio">
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <span class="eyebrow"><span class="eyebrow-dot"></span> Prototipo local · Bogotá D. C.</span>
+            <h1>Una ciudad más limpia empieza por hacer visible el problema.</h1>
+            <p>Reporta una incidencia de residuos y sigue su estado en un solo lugar. Esta demo muestra el primer flujo de EcoBogotá+.</p>
+            <a class="hero-action" href="#reportar">Crear un reporte <span aria-hidden="true">↗</span></a>
+          </div>
+          <div class="hero-art" aria-hidden="true">
+            <div class="art-orbit orbit-one"></div>
+            <div class="art-orbit orbit-two"></div>
+            <div class="art-city city-back"></div>
+            <div class="art-city city-front"></div>
+            <div class="art-pin"><span></span></div>
+            <div class="art-label"><span class="label-dot"></span> Reporte recibido</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats container" aria-label="Resumen de reportes">
+        <div class="stat-card"><span class="stat-icon stat-icon-green" aria-hidden="true">◎</span><div><strong id="totalCount">0</strong><span>Reportes en la demo</span></div></div>
+        <div class="stat-card"><span class="stat-icon stat-icon-gold" aria-hidden="true">◷</span><div><strong id="openCount">0</strong><span>Por atender</span></div></div>
+        <div class="stat-card"><span class="stat-icon stat-icon-blue" aria-hidden="true">✓</span><div><strong id="resolvedCount">0</strong><span>Resueltos</span></div></div>
+      </section>
+
+      <section class="workspace container" aria-label="Gestión de reportes">
+        <div class="form-panel" id="reportar">
+          <span class="section-kicker">01 / PARTICIPA</span>
+          <h2>Nuevo reporte</h2>
+          <p class="section-intro">Cuéntanos qué sucede. Tu reporte aparecerá de inmediato en la lista de esta demo.</p>
+          <form id="reportForm" novalidate>
+            <div class="field">
+              <label for="reportType">Tipo de incidencia <span aria-hidden="true">*</span></label>
+              <select id="reportType" name="type" required>
+                <option value="">Selecciona una opción</option>
+                <option value="BASURA_NO_RECOGIDA">Basura no recogida</option>
+                <option value="CONTENEDOR_LLENO">Contenedor lleno</option>
+                <option value="ESCOMBROS">Escombros</option>
+                <option value="OTRO">Otro</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="reportLocation">Ubicación aproximada <span aria-hidden="true">*</span></label>
+              <input id="reportLocation" name="location" type="text" maxlength="100" placeholder="Ej. Calle 45 con Carrera 7" required />
+            </div>
+            <div class="field">
+              <label for="reportDescription">Descripción <span aria-hidden="true">*</span></label>
+              <textarea id="reportDescription" name="description" rows="4" maxlength="300" placeholder="Describe el problema para que sea fácil identificarlo" required></textarea>
+              <span class="field-hint">Máximo 300 caracteres</span>
+            </div>
+            <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+            <button class="submit-button" type="submit">Publicar reporte <span aria-hidden="true">→</span></button>
+          </form>
+          <p class="demo-note">Demo: los reportes se guardan solo en este navegador. No se envían a una entidad.</p>
+        </div>
+
+        <div class="reports-panel" id="reportes">
+          <div class="reports-heading">
+            <div>
+              <span class="section-kicker">02 / SEGUIMIENTO</span>
+              <h2>Reportes recientes</h2>
+            </div>
+            <label class="filter-label" for="statusFilter">Estado
+              <select id="statusFilter">
+                <option value="TODOS">Todos</option>
+                <option value="RECIBIDO">Recibido</option>
+                <option value="EN_GESTION">En gestión</option>
+                <option value="RESUELTO">Resuelto</option>
+              </select>
+            </label>
+          </div>
+          <div class="report-list" id="reportList" aria-live="polite"></div>
+          <p class="list-footnote">Los casos de ejemplo son ficticios y sirven para presentar el diseño.</p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container footer-inner"><span>EcoBogotá+ <span aria-hidden="true">✳</span></span><span>Prototipo académico · Fundamentos de Ingeniería de Software</span></div>
+    </footer>
+  </body>
+</html>
