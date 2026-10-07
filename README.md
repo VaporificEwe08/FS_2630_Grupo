@@ -67,6 +67,15 @@ Luego abre `http://localhost:8000`. La demo permite crear reportes con un códig
 
 Todavía no existe un backend, un proyecto compilable ni una configuración de Docker.
 
+Para ejecutar las pruebas automáticas de la demo necesitas Node.js 24 o superior:
+
+```bash
+node --check app/app.js
+node --test tests/frontend.test.cjs
+```
+
+El flujo de CI ejecuta estas mismas comprobaciones en cada push y solicitud de cambio.
+
 ---
 
 ## Clonar el repositorio
