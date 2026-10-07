@@ -4,6 +4,7 @@ Este archivo registra cambios reales del proyecto. Las funcionalidades futuras e
 
 ## Sin publicar
 
+- Se añadió el detalle de cada reporte, un historial de estados y la simulación local de su avance.
 - Se añadió una demo web estática para crear y filtrar reportes locales durante la presentación.
 - Se definió el alcance inicial del flujo de reportes y sus criterios de aceptación.
 - Se eligió una interfaz web en navegador para el MVP.

@@ -96,10 +96,26 @@
             </label>
           </div>
           <div class="report-list" id="reportList" aria-live="polite"></div>
-          <p class="list-footnote">Los casos de ejemplo son ficticios y sirven para presentar el diseño.</p>
+          <p class="list-footnote">Abre un reporte para ver su seguimiento. Los casos de ejemplo son ficticios.</p>
         </div>
       </section>
     </main>
+
+    <dialog class="detail-dialog" id="reportDialog" aria-labelledby="detailTitle">
+      <div class="dialog-heading">
+        <div>
+          <span class="section-kicker">SEGUIMIENTO DEL REPORTE</span>
+          <h2 id="detailTitle">Detalle del reporte</h2>
+        </div>
+        <button class="dialog-close" id="closeDialog" type="button" aria-label="Cerrar detalle">×</button>
+      </div>
+      <div id="reportDetail"></div>
+      <div class="dialog-actions">
+        <p class="demo-note">Simulación local: los cambios de estado solo se guardan en este navegador.</p>
+        <p class="dialog-message" id="detailMessage" role="status" aria-live="polite"></p>
+        <button class="advance-button" id="advanceStatus" type="button" hidden></button>
+      </div>
+    </dialog>
 
     <footer class="site-footer">
       <div class="container footer-inner"><span>EcoBogotá+ <span aria-hidden="true">✳</span></span><span>Prototipo académico · Fundamentos de Ingeniería de Software</span></div>

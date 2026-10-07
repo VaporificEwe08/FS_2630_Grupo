@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Validar el flujo central de EcoBogotá+: una persona registra una incidencia de residuos en Bogotá y puede consultar su estado desde una aplicación web. El repositorio contiene una demo estática con almacenamiento local para presentar la interfaz; este documento define el alcance del producto que aún debe implementarse con backend.
+Validar el flujo central de EcoBogotá+: una persona registra una incidencia de residuos en Bogotá y puede consultar su estado desde una aplicación web. El repositorio contiene una demo estática con almacenamiento local, historial y cambios de estado simulados para presentar la interfaz; este documento define el alcance del producto que aún debe implementarse con backend y control de acceso.
 
 ## Alcance funcional
 
