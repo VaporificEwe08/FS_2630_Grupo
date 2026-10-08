@@ -4,6 +4,7 @@ Este archivo registra cambios reales del proyecto. Las funcionalidades futuras e
 
 ## Sin publicar
 
+- Se creó la base del backend Spring Boot con una ruta de salud y una prueba HTTP; CI ahora ejecuta las pruebas Java.
 - Se añadió captura opcional de coordenadas manuales o por geolocalización del navegador en la demo.
 - Se activó CI para comprobar la sintaxis y probar los flujos de la demo web con Node.js.
 - Se añadieron códigos locales de seguimiento y búsqueda por código, ubicación o descripción en la demo.

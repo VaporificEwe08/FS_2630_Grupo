@@ -25,3 +25,20 @@ jobs:
         run: node --check app/app.js
       - name: Probar flujos de reportes
         run: node --test tests/frontend.test.cjs
+
+  backend:
+    name: Pruebas del backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Obtener código
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Preparar Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+      - name: Probar API
+        run: ./mvnw --batch-mode test

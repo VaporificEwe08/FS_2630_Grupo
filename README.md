@@ -22,12 +22,12 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 
 ## Tecnologías Utilizadas
 - **Interfaz del MVP:** web en navegador; la tecnología de frontend aún no está elegida.
-- **Backend propuesto:** Java 17 y Spring Boot.
+- **Backend inicial:** Java 17 y Spring Boot.
 - **Base de datos propuesta:** PostgreSQL.
 - **Tecnologías previstas para fases posteriores:** Python, Pandas, Scikit-learn, Docker y SonarQube.
 - **Control de versiones:** Git
 
-Estas tecnologías describen la dirección prevista. Hay una demo estática del frontend, pero todavía no hay backend ni persistencia compartida. El [alcance del primer incremento](docs/architecture/mvp.md) separa el MVP de las funciones posteriores.
+Hay una demo estática del frontend y una base ejecutable del backend. La API solo ofrece una comprobación de salud; los reportes de la demo todavía no se comparten ni se guardan en el backend. El [alcance del primer incremento](docs/architecture/mvp.md) separa el MVP de las funciones posteriores.
 
 ---
 
@@ -48,11 +48,14 @@ FS_2630_Grupo/
 │   ├── main/
 │   └── test/
 ├── temp/
+├── .mvn/
+├── mvnw
+├── pom.xml
 ├── README.md
 ├── CHANGELOG.md
 └── BOILERPLATE.md
 ```
-`app/` contiene una demo funcional en el navegador. `src/main/` todavía no tiene backend. Los archivos de CI/CD y las plantillas de GitHub están vacíos.
+`app/` contiene una demo funcional en el navegador y `src/main/` contiene el inicio del backend Spring Boot. CI ejecuta pruebas del frontend y backend; CD y las plantillas de GitHub siguen vacíos.
 ---
 
 ## Estado de ejecución
@@ -65,16 +68,23 @@ python3 -m http.server 8000 --directory app
 
 Luego abre `http://localhost:8000`. La demo permite crear reportes con un código local, buscarlos por código, ubicación o descripción, filtrarlos por estado y abrir su historial. Al crear uno, puedes añadir latitud y longitud manualmente o pulsar **Usar mi ubicación**; el navegador pedirá permiso solo al pulsar ese botón. Las coordenadas son opcionales en la demo y se muestran en el detalle si se proporcionaron. Se validan los rangos globales de latitud y longitud, pero todavía no se comprueba si el punto pertenece a Bogotá. En el detalle puedes simular los avances `Recibido → En gestión → Resuelto`. Muestra tres casos ficticios iniciales y guarda los reportes y cambios únicamente en el almacenamiento de ese navegador. El código de seguimiento funciona solo dentro de esta demo local: no consulta un servicio compartido. No envía datos a una entidad ni incluye autenticación de operadores. Para reiniciar los casos de ejemplo, borra los datos de este sitio en el navegador.
 
-Todavía no existe un backend, un proyecto compilable ni una configuración de Docker.
+Para iniciar el backend con Java 17, desde otra terminal en la raíz del repositorio ejecuta:
 
-Para ejecutar las pruebas automáticas de la demo necesitas Node.js 24 o superior:
+```bash
+./mvnw spring-boot:run
+```
+
+La ruta `http://localhost:8080/api/health` responde `{"status":"ok"}` cuando la API está lista. Por ahora la demo web sigue funcionando de forma independiente; aún no existe una API de reportes ni una configuración de Docker.
+
+Para ejecutar las pruebas automáticas necesitas Node.js 24 o superior y Java 17:
 
 ```bash
 node --check app/app.js
 node --test tests/frontend.test.cjs
+./mvnw test
 ```
 
-El flujo de CI ejecuta estas mismas comprobaciones en cada push y solicitud de cambio.
+El flujo de CI ejecuta estas mismas comprobaciones en cada push y solicitud de cambio. El wrapper `mvnw` descarga Maven y las dependencias la primera vez que se utiliza.
 
 ---
 

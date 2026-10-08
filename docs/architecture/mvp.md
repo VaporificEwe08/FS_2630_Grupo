@@ -2,7 +2,7 @@
 
 ## Propósito
 
-Validar el flujo central de EcoBogotá+: una persona registra una incidencia de residuos en Bogotá y puede consultar su estado desde una aplicación web. El repositorio contiene una demo estática con almacenamiento local, historial y cambios de estado simulados para presentar la interfaz; este documento define el alcance del producto que aún debe implementarse con backend y control de acceso.
+Validar el flujo central de EcoBogotá+: una persona registra una incidencia de residuos en Bogotá y puede consultar su estado desde una aplicación web. El repositorio contiene una demo estática con almacenamiento local, historial y cambios de estado simulados para presentar la interfaz, además de una base Spring Boot con una ruta de salud. El flujo de reportes aún debe implementarse en el backend con persistencia y control de acceso.
 
 ## Alcance funcional
 
@@ -38,7 +38,7 @@ La fotografía, autenticación, mapa, notificaciones, estadísticas, detección 
 ## Orden de trabajo propuesto
 
 1. Definir quién operará la gestión de estados y elegir la tecnología del frontend web.
-2. Crear el proyecto backend Java 17 / Spring Boot con una prueba de arranque y CI real.
+2. Crear el proyecto backend Java 17 / Spring Boot con una prueba de arranque y CI real. **Base completada.**
 3. Implementar el modelo, la persistencia y la API del flujo de reportes.
 4. Construir la interfaz web del flujo y probarlo de punta a punta.
 5. Añadir fotografías, cuentas, mapa y demás objetivos por incrementos.
