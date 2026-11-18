@@ -3,6 +3,12 @@ const { requireUser } = require('../lib/auth.cjs');
 const { HttpError, send, method, sameOrigin, body, handle } = require('../lib/http.cjs');
 
 const types = new Set(['BASURA_NO_RECOGIDA', 'CONTENEDOR_LLENO', 'ESCOMBROS', 'OTRO']);
+const reportColumns = `id, type, location, description, latitude, longitude, status, created_at,
+  COALESCE((
+    SELECT json_agg(json_build_object('status', events.status, 'at', events.created_at, 'actor', users.name) ORDER BY events.id)
+    FROM report_status_events events JOIN users ON users.id = events.actor_user_id
+    WHERE events.report_id = reports.id
+  ), '[]'::json) AS events`;
 
 function mapReport(row) {
   return {
@@ -10,7 +16,7 @@ function mapReport(row) {
     type: row.type, location: row.location, description: row.description,
     coordinates: row.latitude === null ? null : { latitude: row.latitude, longitude: row.longitude },
     status: row.status, createdAt: row.created_at,
-    history: [{ status: 'RECIBIDO', at: row.created_at, actor: 'EcoBogotá+' }],
+    history: [{ status: 'RECIBIDO', at: row.created_at, actor: 'EcoBogotá+' }, ...row.events],
   };
 }
 
@@ -20,8 +26,8 @@ module.exports = handle(async (req, res) => {
   if (req.method === 'GET') {
     const mine = new URL(req.url, 'http://localhost').searchParams.get('mine') === '1';
     const result = mine
-      ? await db.query('SELECT id, type, location, description, latitude, longitude, status, created_at FROM reports WHERE user_id = $1 ORDER BY created_at DESC', [(await requireUser(req)).id])
-      : await db.query('SELECT id, type, location, description, latitude, longitude, status, created_at FROM reports ORDER BY created_at DESC LIMIT 100');
+      ? await db.query(`SELECT ${reportColumns} FROM reports WHERE user_id = $1 ORDER BY created_at DESC`, [(await requireUser(req)).id])
+      : await db.query(`SELECT ${reportColumns} FROM reports ORDER BY created_at DESC LIMIT 100`);
     return send(res, 200, { reports: result.rows.map(mapReport) });
   }
   sameOrigin(req);
@@ -44,5 +50,5 @@ module.exports = handle(async (req, res) => {
     }
   }
   const result = await db.query('INSERT INTO reports (user_id, type, location, description, latitude, longitude) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, type, location, description, latitude, longitude, status, created_at', [user.id, type, location, description, latitude, longitude]);
-  send(res, 201, { report: mapReport(result.rows[0]) });
+  send(res, 201, { report: mapReport({ ...result.rows[0], events: [] }) });
 });

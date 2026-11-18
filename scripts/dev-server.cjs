@@ -6,6 +6,7 @@ const root = path.join(__dirname, '..', 'app');
 const handlers = {
   '/api/auth': require('../api/auth.js'),
   '/api/reports': require('../api/reports.js'),
+  '/api/report-status': require('../api/report-status.js'),
   '/api/health': require('../api/health.js'),
 };
 const files = { '/': 'index.html', '/index.html': 'index.html', '/app.js': 'app.js', '/styles.css': 'styles.css' };

@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
 const path = require('node:path');
 const { randomUUID } = require('node:crypto');
+const { Pool } = require('pg');
 
 test('registro, sesión y reporte persisten en PostgreSQL', { skip: !process.env.DATABASE_URL }, async () => {
   const port = 32000 + Math.floor(Math.random() * 1000);
@@ -30,6 +31,7 @@ test('registro, sesión y reporte persisten en PostgreSQL', { skip: !process.env
     const cookie = registration.headers.get('set-cookie').split(';')[0];
     const user = (await registration.json()).user;
     assert.equal(user.email, email);
+    assert.equal(user.isAdmin, false);
     assert.equal((await post('/api/auth', { action: 'register', name: 'Otro', email, password: 'clave-segura-123' })).status, 409);
     assert.equal((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).user.email, email);
     assert.equal((await fetch(`${base}/api/reports?mine=1`)).status, 401);
@@ -52,10 +54,31 @@ test('registro, sesión y reporte persisten en PostgreSQL', { skip: !process.env
     const secondCookie = second.headers.get('set-cookie').split(';')[0];
     const secondMine = (await (await fetch(`${base}/api/reports?mine=1`, { headers: { cookie: secondCookie } })).json()).reports;
     assert.deepEqual(secondMine, []);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'EN_GESTION' })).status, 401);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'EN_GESTION' }, cookie)).status, 403);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'EN_GESTION' }, secondCookie)).status, 403);
+    const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+    try {
+      await pool.query('UPDATE users SET is_admin = TRUE WHERE id = $1', [user.id]);
+    } finally { await pool.end(); }
+    assert.equal((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).user.isAdmin, true);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'INVALIDO' }, cookie)).status, 400);
+    assert.equal((await post('/api/report-status', { id: '999999999999999999', status: 'EN_GESTION' }, cookie)).status, 404);
+    const changed = await post('/api/report-status', { id: report.id, status: 'EN_GESTION' }, cookie);
+    assert.equal(changed.status, 200);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'EN_GESTION' }, cookie)).status, 409);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'RESUELTO' }, cookie)).status, 200);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'RECIBIDO' }, cookie)).status, 200);
+    const updated = (await (await fetch(`${base}/api/reports?mine=1`, { headers: { cookie } })).json()).reports[0];
+    assert.equal(updated.status, 'RECIBIDO');
+    assert.deepEqual(updated.history.map((event) => event.status), ['RECIBIDO', 'EN_GESTION', 'RESUELTO', 'RECIBIDO']);
+    assert.equal(updated.history[1].actor, user.name);
+    assert.equal((await post('/api/report-status', { id: report.id, status: 'RESUELTO' }, secondCookie)).status, 403);
     assert.equal((await post('/api/auth', { action: 'logout' }, cookie)).status, 200);
     assert.equal((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).user, null);
     const login = await post('/api/auth', { action: 'login', email, password: 'clave-segura-123' });
     assert.equal(login.status, 200);
+    assert.equal((await login.json()).user.isAdmin, true);
   } finally {
     server.kill();
   }

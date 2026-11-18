@@ -32,7 +32,7 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 - **Tecnologías previstas para fases posteriores:** Python, Pandas, Scikit-learn, Docker y SonarQube.
 - **Control de versiones:** Git
 
-La web permite crear cuentas, iniciar sesión, publicar reportes, consultar los 100 más recientes y ver todos los reportes de la cuenta en **Mis reportes**. Los datos se guardan en PostgreSQL y se comparten entre visitantes. Los reportes comienzan en estado `Recibido`; la gestión por operadores sigue pendiente. El [alcance del primer incremento](docs/architecture/mvp.md) describe la visión original.
+La web permite crear cuentas, iniciar sesión, publicar reportes, consultar los 100 más recientes y ver todos los reportes de la cuenta en **Mis reportes**. Los datos se guardan en PostgreSQL y se comparten entre visitantes. Los reportes comienzan en estado `Recibido`; las cuentas administradoras pueden marcarlos como `Recibido` (por atender), `En gestión` o `Resuelto` (finalizado). Cada cambio queda en el historial. El [alcance del primer incremento](docs/architecture/mvp.md) describe la visión original.
 
 ---
 
@@ -79,16 +79,17 @@ set -a; . ./.env; set +a
 npm start
 ```
 
-Abre `http://localhost:3000`. Crea una cuenta con correo y contraseña de al menos 8 caracteres. La sesión dura siete días; las contraseñas se guardan con `scrypt` y las sesiones usan cookies `HttpOnly`. Puedes publicar un reporte con ubicación, descripción y coordenadas opcionales, buscarlo y ver su detalle desde otro navegador. Después de ingresar, **Mis reportes** muestra solo los reportes de esa cuenta. Las coordenadas se hacen públicas con el reporte. La base se inicializa automáticamente al primer acceso. No publiques información personal ni reportes reales para una entidad: este es un prototipo académico.
+Abre `http://localhost:3000`. Crea una cuenta con correo y contraseña de al menos 8 caracteres. La sesión dura siete días; las contraseñas se guardan con `scrypt` y las sesiones usan cookies `HttpOnly`. Puedes publicar un reporte con ubicación, descripción y coordenadas opcionales, buscarlo y ver su detalle desde otro navegador. Después de ingresar, **Mis reportes** muestra solo los reportes de esa cuenta. Las coordenadas se hacen públicas con el reporte. La base se inicializa y migra automáticamente al primer acceso. No publiques información personal ni reportes reales para una entidad: este es un prototipo académico.
+
+La migración agrega `users.is_admin` y la tabla `report_status_events` sin borrar cuentas ni reportes. Al ejecutarse por primera vez, asigna el rol de administrador a las cuentas **ya existentes** `neycarlos@javeriana.edu.co` y `jimenezb_p@javeriana.edu.co`. Registrarse después con uno de esos correos no concede el rol. Para comprobar la migración en Neon, ejecuta `SELECT email, is_admin FROM users WHERE lower(email) IN ('neycarlos@javeriana.edu.co', 'jimenezb_p@javeriana.edu.co');`. Si una cuenta todavía no existía al migrar, un operador de la base debe asignarle el rol manualmente con `UPDATE users SET is_admin = TRUE WHERE lower(email) = 'correo@ejemplo.com';`, después de verificar que pertenece a la persona correcta. Nunca concedas el rol desde la interfaz pública.
 
 Para detener la base: `docker compose down`. El volumen conserva los datos. No uses `down -v` si quieres conservarlos. Si cambias `POSTGRES_PASSWORD` en Compose, cambia también la contraseña de `DATABASE_URL` en `.env` antes de iniciar la app.
 
 ## Publicar en Vercel
 
-1. Haz `git push` de este commit a GitHub.
-2. En Vercel, importa `VaporificEwe08/FS_2630_Grupo` como proyecto nuevo. Usa la raíz del repositorio; `vercel.json` selecciona `app/` como salida y Vercel detecta las funciones de `api/`.
-3. En **Storage / Marketplace**, agrega PostgreSQL administrado (por ejemplo Neon) y conéctalo al proyecto. Asegúrate de que la cadena de conexión esté disponible como `DATABASE_URL` para **Production** y, si vas a probar previews, para **Preview**. Si la integración ofrece otro nombre, crea `DATABASE_URL` con su cadena de conexión. No copies la URL en Git ni en el navegador.
-4. Despliega o vuelve a desplegar el proyecto después de configurar la variable. Abre la URL `*.vercel.app` y comprueba `/api/health`, luego crea una cuenta y un reporte.
+1. Haz `git push origin main`. El proyecto Vercel ya conectado a esta rama creará un despliegue nuevo automáticamente; no necesitas pulsar **Redeploy** ni recrear la base de datos.
+2. Comprueba que el despliegue figure como **Ready** y abre la URL pública con `/api/health`. Esa solicitud aplica la migración automáticamente en la base Neon conectada mediante `DATABASE_URL`.
+3. En **Storage → ecobogota-db → Query**, comprueba las cuentas administradoras con la consulta anterior. Luego inicia sesión como administrador y cambia el estado de un reporte.
 
 El PostgreSQL de `compose.yaml` solo funciona en tu equipo; Vercel necesita una base accesible desde sus funciones. Vercel no ejecuta este Compose como base de datos pública. El esquema se crea automáticamente en la primera solicitud a la API. Si aparece `Servicio temporalmente no disponible`, revisa `DATABASE_URL` y los logs de funciones en Vercel.
 

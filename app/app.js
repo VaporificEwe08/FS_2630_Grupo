@@ -10,7 +10,6 @@ const statuses = {
   EN_GESTION: { label: "En gestión", className: "status-en-gestion" },
   RESUELTO: { label: "Resuelto", className: "status-resuelto" },
 };
-const statusOrder = ["RECIBIDO", "EN_GESTION", "RESUELTO"];
 
 function searchText(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -98,6 +97,8 @@ const dialog = document.getElementById("reportDialog");
 const detail = document.getElementById("reportDetail");
 const detailMessage = document.getElementById("detailMessage");
 const advanceButton = document.getElementById("advanceStatus");
+const adminActions = document.getElementById("adminActions");
+const adminStatus = document.getElementById("adminStatus");
 const detectLocationButton = document.getElementById("detectLocation");
 const locationMessage = document.getElementById("locationMessage");
 let selectedReportId = null;
@@ -127,19 +128,19 @@ function renderDetail(report) {
 
   detail.append(element("h3", "timeline-heading", "Historial de estados"));
   const timeline = element("ol", "timeline");
-  for (const status of statusOrder) {
-    const event = report.history.find((item) => item.status === status);
-    const item = element("li", `timeline-item ${event ? "timeline-done" : "timeline-pending"}`);
-    item.append(element("span", "timeline-dot", event ? "✓" : ""));
+  for (const event of report.history) {
+    const item = element("li", "timeline-item timeline-done");
+    item.append(element("span", "timeline-dot", "✓"));
     const content = element("div", "timeline-content");
-    content.append(element("strong", "", statuses[status].label));
-    content.append(element("span", "", event ? `${formatDate(event.at)} · ${event.actor}` : "Pendiente"));
+    content.append(element("strong", "", statuses[event.status].label));
+    content.append(element("span", "", `${formatDate(event.at)} · ${event.actor}`));
     item.append(content);
     timeline.append(item);
   }
   detail.append(timeline);
 
-  advanceButton.hidden = true;
+  adminActions.hidden = !currentUser?.isAdmin;
+  adminStatus.value = report.status;
 }
 
 function openReport(id) {
@@ -246,9 +247,28 @@ detectLocationButton.addEventListener("click", () => {
 });
 document.getElementById("closeDialog").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => { selectedReportId = null; });
+advanceButton.addEventListener('click', async () => {
+  if (!currentUser?.isAdmin || !selectedReportId) return;
+  advanceButton.disabled = true;
+  detailMessage.textContent = '';
+  try {
+    await request('/api/report-status', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: selectedReportId, status: adminStatus.value }),
+    });
+    await refreshReports();
+    const updated = activeReports().find((report) => report.id === selectedReportId);
+    if (updated) renderDetail(updated);
+    detailMessage.classList.add('success');
+    detailMessage.textContent = 'Estado actualizado.';
+  } catch (error) {
+    detailMessage.classList.remove('success');
+    detailMessage.textContent = error.message;
+  } finally { advanceButton.disabled = false; }
+});
 function setUser(user) {
   currentUser = user;
-  document.getElementById('accountButton').textContent = user ? `${user.name} · Salir` : 'Ingresar';
+  document.getElementById('accountButton').textContent = user ? `${user.name}${user.isAdmin ? ' · Admin' : ''} · Salir` : 'Ingresar';
   document.getElementById('myReportsNav').hidden = !user;
   document.getElementById('myReportsButton').hidden = !user;
   if (!user) {
@@ -258,6 +278,10 @@ function setUser(user) {
     document.getElementById('allReportsButton').setAttribute('aria-pressed', 'true');
     document.getElementById('myReportsButton').setAttribute('aria-pressed', 'false');
     render();
+  }
+  if (dialog.open && selectedReportId) {
+    const report = activeReports().find((item) => item.id === selectedReportId);
+    if (report) renderDetail(report);
   }
 }
 function showAuth(register = false) {

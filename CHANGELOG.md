@@ -4,6 +4,7 @@ Este archivo registra cambios reales del proyecto. Las funcionalidades futuras e
 
 ## Sin publicar
 
+- Se añadieron roles administradores para dos cuentas existentes, cambios de estado protegidos en la API y un historial persistente de cada reporte.
 - Se añadió la vista **Mis reportes** para consultar todos los reportes de la cuenta autenticada.
 - Se conectó la web a PostgreSQL mediante funciones Node.js, con registro, inicio y cierre de sesión y reportes públicos persistentes.
 - Se agregó Docker Compose para PostgreSQL local, configuración de Vercel y pruebas de integración en CI.

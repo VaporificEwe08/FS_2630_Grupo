@@ -138,7 +138,15 @@
       <div class="dialog-actions">
         <p class="demo-note">El seguimiento muestra los estados registrados en la plataforma.</p>
         <p class="dialog-message" id="detailMessage" role="status" aria-live="polite"></p>
-        <button class="advance-button" id="advanceStatus" type="button" hidden></button>
+        <div class="admin-actions" id="adminActions" hidden>
+          <label for="adminStatus">Cambiar estado (administradores)</label>
+          <select id="adminStatus">
+            <option value="RECIBIDO">Por atender</option>
+            <option value="EN_GESTION">En gestión</option>
+            <option value="RESUELTO">Finalizado</option>
+          </select>
+          <button class="advance-button" id="advanceStatus" type="button">Guardar estado</button>
+        </div>
       </div>
     </dialog>
 
