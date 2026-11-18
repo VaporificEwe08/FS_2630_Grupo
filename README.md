@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo/Logo_V2.png" width="140" alt="EcoBogota+">
+  <img src="assets/logo/ecobogota-paisaje-880.png" width="140" alt="EcoBogota+">
 </p>
 
 # EcoBogotá+
