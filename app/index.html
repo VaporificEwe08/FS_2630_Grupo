@@ -19,6 +19,7 @@
         <nav aria-label="Navegación principal">
           <a href="#reportar">Crear reporte</a>
           <a href="#reportes">Ver reportes</a>
+          <a href="#reportes" id="myReportsNav" hidden>Mis reportes</a>
           <button class="account-button" id="accountButton" type="button">Ingresar</button>
         </nav>
       </div>
@@ -102,7 +103,7 @@
           <div class="reports-heading">
             <div>
               <span class="section-kicker">02 / SEGUIMIENTO</span>
-              <h2>Reportes recientes</h2>
+              <h2 id="reportsTitle">Reportes recientes</h2>
             </div>
             <label class="filter-label" for="statusFilter">Estado
               <select id="statusFilter">
@@ -113,10 +114,14 @@
               </select>
             </label>
           </div>
+          <div class="report-views" aria-label="Vista de reportes">
+            <button id="allReportsButton" type="button" aria-pressed="true">Todos los reportes</button>
+            <button id="myReportsButton" type="button" aria-pressed="false" hidden>Mis reportes</button>
+          </div>
           <label class="search-label" for="reportSearch">Buscar un reporte</label>
           <input id="reportSearch" class="report-search" type="search" placeholder="Código, ubicación o descripción" autocomplete="off" />
           <div class="report-list" id="reportList" aria-live="polite"></div>
-          <p class="list-footnote">Abre un reporte para ver su seguimiento. Se muestran los 100 más recientes.</p>
+          <p class="list-footnote">Abre un reporte para ver su seguimiento. La vista pública muestra los 100 más recientes; Mis reportes muestra todos los tuyos.</p>
         </div>
       </section>
     </main>

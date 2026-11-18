@@ -18,7 +18,10 @@ module.exports = handle(async (req, res) => {
   method(req, ['GET', 'POST']);
   const db = await ready();
   if (req.method === 'GET') {
-    const result = await db.query('SELECT id, type, location, description, latitude, longitude, status, created_at FROM reports ORDER BY created_at DESC LIMIT 100');
+    const mine = new URL(req.url, 'http://localhost').searchParams.get('mine') === '1';
+    const result = mine
+      ? await db.query('SELECT id, type, location, description, latitude, longitude, status, created_at FROM reports WHERE user_id = $1 ORDER BY created_at DESC', [(await requireUser(req)).id])
+      : await db.query('SELECT id, type, location, description, latitude, longitude, status, created_at FROM reports ORDER BY created_at DESC LIMIT 100');
     return send(res, 200, { reports: result.rows.map(mapReport) });
   }
   sameOrigin(req);

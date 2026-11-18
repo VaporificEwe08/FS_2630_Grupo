@@ -32,6 +32,7 @@ test('registro, sesión y reporte persisten en PostgreSQL', { skip: !process.env
     assert.equal(user.email, email);
     assert.equal((await post('/api/auth', { action: 'register', name: 'Otro', email, password: 'clave-segura-123' })).status, 409);
     assert.equal((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).user.email, email);
+    assert.equal((await fetch(`${base}/api/reports?mine=1`)).status, 401);
     const denied = await post('/api/reports', { type: 'OTRO', location: 'Calle 50', description: 'Basura acumulada en andén' });
     assert.equal(denied.status, 401);
     const badOrigin = await fetch(`${base}/api/reports`, { method: 'POST', headers: { 'Content-Type': 'application/json', Origin: 'https://evil.example', cookie }, body: JSON.stringify({ type: 'OTRO', location: 'Calle 50', description: 'Basura acumulada en andén' }) });
@@ -44,6 +45,13 @@ test('registro, sesión y reporte persisten en PostgreSQL', { skip: !process.env
     assert.equal(report.coordinates.latitude, 4.65);
     const list = (await (await fetch(`${base}/api/reports`)).json()).reports;
     assert.ok(list.some((item) => item.reference === report.reference));
+    const mine = (await (await fetch(`${base}/api/reports?mine=1`, { headers: { cookie } })).json()).reports;
+    assert.deepEqual(mine.map((item) => item.reference), [report.reference]);
+    const secondEmail = `test-${randomUUID()}@example.com`;
+    const second = await post('/api/auth', { action: 'register', name: 'Otra persona', email: secondEmail, password: 'otra-clave-segura' });
+    const secondCookie = second.headers.get('set-cookie').split(';')[0];
+    const secondMine = (await (await fetch(`${base}/api/reports?mine=1`, { headers: { cookie: secondCookie } })).json()).reports;
+    assert.deepEqual(secondMine, []);
     assert.equal((await post('/api/auth', { action: 'logout' }, cookie)).status, 200);
     assert.equal((await (await fetch(`${base}/api/auth`, { headers: { cookie } })).json()).user, null);
     const login = await post('/api/auth', { action: 'login', email, password: 'clave-segura-123' });

@@ -56,6 +56,8 @@ function reportCard(report) {
 }
 
 let reports = [];
+let ownReports = [];
+let reportView = 'all';
 let currentUser = null;
 let registering = false;
 async function request(url, options = {}) {
@@ -68,6 +70,23 @@ async function request(url, options = {}) {
 }
 async function refreshReports() {
   reports = (await request('/api/reports')).reports;
+  if (currentUser && reportView === 'mine') ownReports = (await request('/api/reports?mine=1')).reports;
+  render();
+}
+function activeReports() { return reportView === 'mine' ? ownReports : reports; }
+async function switchView(view) {
+  if (view === 'mine' && !currentUser) return;
+  reportView = view;
+  document.getElementById('reportsTitle').textContent = view === 'mine' ? 'Mis reportes' : 'Reportes recientes';
+  document.getElementById('allReportsButton').setAttribute('aria-pressed', String(view === 'all'));
+  document.getElementById('myReportsButton').setAttribute('aria-pressed', String(view === 'mine'));
+  filter.value = 'TODOS';
+  search.value = '';
+  if (view === 'mine') {
+    reportList.replaceChildren(element('p', 'empty-state', 'Cargando tus reportes…'));
+    try { ownReports = (await request('/api/reports?mine=1')).reports; }
+    catch (error) { reportList.replaceChildren(element('p', 'empty-state', error.message)); return; }
+  }
   render();
 }
 const reportList = document.getElementById("reportList");
@@ -124,7 +143,7 @@ function renderDetail(report) {
 }
 
 function openReport(id) {
-  const report = reports.find((item) => item.id === id);
+  const report = activeReports().find((item) => item.id === id);
   if (!report) return;
   selectedReportId = id;
   detailMessage.textContent = "";
@@ -138,7 +157,7 @@ function render() {
   document.getElementById("resolvedCount").textContent = String(reports.filter((report) => report.status === "RESUELTO").length);
 
   const query = searchText(search.value.trim());
-  const visible = reports.filter((report) => {
+  const visible = activeReports().filter((report) => {
     if (filter.value !== "TODOS" && report.status !== filter.value) return false;
     return [report.reference, types[report.type].label, report.location, report.description]
       .some((value) => searchText(value).includes(query));
@@ -147,7 +166,7 @@ function render() {
   if (visible.length === 0) {
     reportList.append(element("p", "empty-state", query
       ? "No hay reportes que coincidan con la búsqueda."
-      : filter.value !== "TODOS" ? "No hay reportes con este estado." : "Aún no hay reportes. ¡Publica el primero!"));
+      : filter.value !== "TODOS" ? "No hay reportes con este estado." : reportView === 'mine' ? "Aún no has publicado reportes." : "Aún no hay reportes. ¡Publica el primero!"));
   } else {
     reportList.append(...visible.map(reportCard));
   }
@@ -230,6 +249,16 @@ dialog.addEventListener("close", () => { selectedReportId = null; });
 function setUser(user) {
   currentUser = user;
   document.getElementById('accountButton').textContent = user ? `${user.name} · Salir` : 'Ingresar';
+  document.getElementById('myReportsNav').hidden = !user;
+  document.getElementById('myReportsButton').hidden = !user;
+  if (!user) {
+    ownReports = [];
+    reportView = 'all';
+    document.getElementById('reportsTitle').textContent = 'Reportes recientes';
+    document.getElementById('allReportsButton').setAttribute('aria-pressed', 'true');
+    document.getElementById('myReportsButton').setAttribute('aria-pressed', 'false');
+    render();
+  }
 }
 function showAuth(register = false) {
   registering = register;
@@ -253,6 +282,7 @@ document.getElementById('authForm').addEventListener('submit', async (event) => 
     authForm.reset();
     document.getElementById('authDialog').close();
     message.textContent = `Sesión iniciada como ${user.name}. Ya puedes publicar.`;
+    await switchView('mine');
   } catch (error) { document.getElementById('authMessage').textContent = error.message; }
   finally { submit.disabled = false; }
 });
@@ -266,7 +296,16 @@ document.getElementById('accountButton').addEventListener('click', async () => {
 });
 document.getElementById('authSwitch').addEventListener('click', () => showAuth(!registering));
 document.getElementById('closeAuth').addEventListener('click', () => document.getElementById('authDialog').close());
-Promise.allSettled([request('/api/auth'), refreshReports()]).then(([auth, list]) => {
-  if (auth.status === 'fulfilled') setUser(auth.value.user);
-  if (list.status === 'rejected') reportList.replaceChildren(element('p', 'empty-state', list.reason.message));
-});
+document.getElementById('allReportsButton').addEventListener('click', () => switchView('all'));
+document.getElementById('myReportsButton').addEventListener('click', () => switchView('mine'));
+document.getElementById('myReportsNav').addEventListener('click', () => switchView('mine'));
+async function initialize() {
+  try { setUser((await request('/api/auth')).user); } catch { setUser(null); }
+  try {
+    await refreshReports();
+    if (currentUser) await switchView('mine');
+  } catch (error) {
+    reportList.replaceChildren(element('p', 'empty-state', error.message));
+  }
+}
+initialize();

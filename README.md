@@ -28,7 +28,7 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 - **Tecnologías previstas para fases posteriores:** Python, Pandas, Scikit-learn, Docker y SonarQube.
 - **Control de versiones:** Git
 
-La web permite crear cuentas, iniciar sesión, publicar reportes y consultar los 100 más recientes. Los datos se guardan en PostgreSQL y se comparten entre visitantes. Los reportes comienzan en estado `Recibido`; la gestión por operadores sigue pendiente. El [alcance del primer incremento](docs/architecture/mvp.md) describe la visión original.
+La web permite crear cuentas, iniciar sesión, publicar reportes, consultar los 100 más recientes y ver todos los reportes de la cuenta en **Mis reportes**. Los datos se guardan en PostgreSQL y se comparten entre visitantes. Los reportes comienzan en estado `Recibido`; la gestión por operadores sigue pendiente. El [alcance del primer incremento](docs/architecture/mvp.md) describe la visión original.
 
 ---
 
@@ -75,7 +75,7 @@ set -a; . ./.env; set +a
 npm start
 ```
 
-Abre `http://localhost:3000`. Crea una cuenta con correo y contraseña de al menos 8 caracteres. La sesión dura siete días; las contraseñas se guardan con `scrypt` y las sesiones usan cookies `HttpOnly`. Puedes publicar un reporte con ubicación, descripción y coordenadas opcionales, buscarlo y ver su detalle desde otro navegador. Las coordenadas se hacen públicas con el reporte. La base se inicializa automáticamente al primer acceso. No publiques información personal ni reportes reales para una entidad: este es un prototipo académico.
+Abre `http://localhost:3000`. Crea una cuenta con correo y contraseña de al menos 8 caracteres. La sesión dura siete días; las contraseñas se guardan con `scrypt` y las sesiones usan cookies `HttpOnly`. Puedes publicar un reporte con ubicación, descripción y coordenadas opcionales, buscarlo y ver su detalle desde otro navegador. Después de ingresar, **Mis reportes** muestra solo los reportes de esa cuenta. Las coordenadas se hacen públicas con el reporte. La base se inicializa automáticamente al primer acceso. No publiques información personal ni reportes reales para una entidad: este es un prototipo académico.
 
 Para detener la base: `docker compose down`. El volumen conserva los datos. No uses `down -v` si quieres conservarlos. Si cambias `POSTGRES_PASSWORD` en Compose, cambia también la contraseña de `DATABASE_URL` en `.env` antes de iniciar la app.
 

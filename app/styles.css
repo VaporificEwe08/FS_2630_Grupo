@@ -91,6 +91,10 @@ h2 { margin: 8px 0 8px; color: #183b2c; font-size: 27px; letter-spacing: -.04em;
 .demo-note { margin: 17px 0 0; color: #8a9a8c; font-size: 11px; line-height: 1.5; }
 
 .reports-heading { display: flex; justify-content: space-between; align-items: end; gap: 15px; margin-bottom: 20px; }
+.report-views { display: flex; gap: 8px; margin: -4px 0 18px; }
+.report-views button { padding: 8px 12px; border: 1px solid #dce8dd; border-radius: 8px; background: #f6faf5; color: #52705a; cursor: pointer; font-size: 12px; font-weight: 750; }
+.report-views button[aria-pressed="true"] { border-color: #147a55; background: #e4f4e8; color: #126647; }
+.report-views button:hover, .report-views button:focus-visible { border-color: #147a55; }
 .filter-label { display: grid; gap: 6px; color: #718476; font-size: 11px; font-weight: 750; }
 .filter-label select { min-width: 125px; min-height: 36px; padding: 0 9px; font-size: 12px; }
 .search-label { display: block; margin-bottom: 7px; color: #718476; font-size: 11px; font-weight: 750; }
