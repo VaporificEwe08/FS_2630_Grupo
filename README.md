@@ -21,13 +21,14 @@ El objetivo es facilitar el seguimiento de los reportes y proporcionar informaci
 ---
 
 ## Tecnologías Utilizadas
-- **Interfaz del MVP:** web en navegador; la tecnología de frontend aún no está elegida.
-- **Backend inicial:** Java 17 y Spring Boot.
-- **Base de datos propuesta:** PostgreSQL.
+- **Interfaz del MVP:** HTML, CSS y JavaScript en navegador.
+- **API desplegable en Vercel:** funciones Node.js.
+- **Base de datos:** PostgreSQL; Docker Compose para desarrollo local.
+- **Backend Java:** base Spring Boot conservada para desarrollo posterior.
 - **Tecnologías previstas para fases posteriores:** Python, Pandas, Scikit-learn, Docker y SonarQube.
 - **Control de versiones:** Git
 
-Hay una demo estática del frontend y una base ejecutable del backend. La API solo ofrece una comprobación de salud; los reportes de la demo todavía no se comparten ni se guardan en el backend. El [alcance del primer incremento](docs/architecture/mvp.md) separa el MVP de las funciones posteriores.
+La web permite crear cuentas, iniciar sesión, publicar reportes y consultar los 100 más recientes. Los datos se guardan en PostgreSQL y se comparten entre visitantes. Los reportes comienzan en estado `Recibido`; la gestión por operadores sigue pendiente. El [alcance del primer incremento](docs/architecture/mvp.md) describe la visión original.
 
 ---
 
@@ -38,7 +39,11 @@ FS_2630_Grupo/
 │   ├── ISSUE/
 │   ├── PULL_REQUEST.md
 │   └── workflows/
-├── app/                 # Demo web estática
+├── api/                 # Funciones Node.js para Vercel
+├── app/                 # Interfaz web
+├── lib/                 # PostgreSQL, sesiones y HTTP
+├── scripts/             # Servidor local
+├── compose.yaml         # PostgreSQL local
 ├── conf/
 ├── docs/
 │   ├── api/
@@ -55,18 +60,33 @@ FS_2630_Grupo/
 ├── CHANGELOG.md
 └── BOILERPLATE.md
 ```
-`app/` contiene una demo funcional en el navegador y `src/main/` contiene el inicio del backend Spring Boot. CI ejecuta pruebas del frontend y backend; CD y las plantillas de GitHub siguen vacíos.
+`src/main/` conserva el inicio del backend Spring Boot, separado de la API Node.js que usa esta versión web. CI prueba la API con PostgreSQL y ejecuta las pruebas Java.
 ---
 
 ## Estado de ejecución
 
-Para presentar la demo web, desde la raíz del repositorio ejecuta:
+Para ejecutar la web y PostgreSQL localmente, desde la raíz del repositorio ejecuta:
 
 ```bash
-python3 -m http.server 8000 --directory app
+docker compose up -d db
+cp .env.example .env
+npm ci
+set -a; . ./.env; set +a
+npm start
 ```
 
-Luego abre `http://localhost:8000`. La demo permite crear reportes con un código local, buscarlos por código, ubicación o descripción, filtrarlos por estado y abrir su historial. Al crear uno, puedes añadir latitud y longitud manualmente o pulsar **Usar mi ubicación**; el navegador pedirá permiso solo al pulsar ese botón. Las coordenadas son opcionales en la demo y se muestran en el detalle si se proporcionaron. Se validan los rangos globales de latitud y longitud, pero todavía no se comprueba si el punto pertenece a Bogotá. En el detalle puedes simular los avances `Recibido → En gestión → Resuelto`. Muestra tres casos ficticios iniciales y guarda los reportes y cambios únicamente en el almacenamiento de ese navegador. El código de seguimiento funciona solo dentro de esta demo local: no consulta un servicio compartido. No envía datos a una entidad ni incluye autenticación de operadores. Para reiniciar los casos de ejemplo, borra los datos de este sitio en el navegador.
+Abre `http://localhost:3000`. Crea una cuenta con correo y contraseña de al menos 8 caracteres. La sesión dura siete días; las contraseñas se guardan con `scrypt` y las sesiones usan cookies `HttpOnly`. Puedes publicar un reporte con ubicación, descripción y coordenadas opcionales, buscarlo y ver su detalle desde otro navegador. Las coordenadas se hacen públicas con el reporte. La base se inicializa automáticamente al primer acceso. No publiques información personal ni reportes reales para una entidad: este es un prototipo académico.
+
+Para detener la base: `docker compose down`. El volumen conserva los datos. No uses `down -v` si quieres conservarlos. Si cambias `POSTGRES_PASSWORD` en Compose, cambia también la contraseña de `DATABASE_URL` en `.env` antes de iniciar la app.
+
+## Publicar en Vercel
+
+1. Haz `git push` de este commit a GitHub.
+2. En Vercel, importa `VaporificEwe08/FS_2630_Grupo` como proyecto nuevo. Usa la raíz del repositorio; `vercel.json` selecciona `app/` como salida y Vercel detecta las funciones de `api/`.
+3. En **Storage / Marketplace**, agrega PostgreSQL administrado (por ejemplo Neon) y conéctalo al proyecto. Asegúrate de que la cadena de conexión esté disponible como `DATABASE_URL` para **Production** y, si vas a probar previews, para **Preview**. Si la integración ofrece otro nombre, crea `DATABASE_URL` con su cadena de conexión. No copies la URL en Git ni en el navegador.
+4. Despliega o vuelve a desplegar el proyecto después de configurar la variable. Abre la URL `*.vercel.app` y comprueba `/api/health`, luego crea una cuenta y un reporte.
+
+El PostgreSQL de `compose.yaml` solo funciona en tu equipo; Vercel necesita una base accesible desde sus funciones. Vercel no ejecuta este Compose como base de datos pública. El esquema se crea automáticamente en la primera solicitud a la API. Si aparece `Servicio temporalmente no disponible`, revisa `DATABASE_URL` y los logs de funciones en Vercel.
 
 Para iniciar el backend con Java 17, desde otra terminal en la raíz del repositorio ejecuta:
 
@@ -74,17 +94,17 @@ Para iniciar el backend con Java 17, desde otra terminal en la raíz del reposit
 ./mvnw spring-boot:run
 ```
 
-La ruta `http://localhost:8080/api/health` responde `{"status":"ok"}` cuando la API está lista. Por ahora la demo web sigue funcionando de forma independiente; aún no existe una API de reportes ni una configuración de Docker.
+La ruta `http://localhost:8080/api/health` responde `{"status":"ok"}` en Spring Boot. Este servicio Java es independiente de la web desplegada en Vercel.
 
 Para ejecutar las pruebas automáticas necesitas Node.js 24 o superior y Java 17:
 
 ```bash
 node --check app/app.js
-node --test tests/frontend.test.cjs
+npm test
 ./mvnw test
 ```
 
-El flujo de CI ejecuta estas mismas comprobaciones en cada push y solicitud de cambio. El wrapper `mvnw` descarga Maven y las dependencias la primera vez que se utiliza.
+`npm test` ejecuta el flujo completo con PostgreSQL si `DATABASE_URL` está configurada; en CI se levanta una instancia temporal. El wrapper `mvnw` descarga Maven y las dependencias la primera vez que se utiliza.
 
 ---
 

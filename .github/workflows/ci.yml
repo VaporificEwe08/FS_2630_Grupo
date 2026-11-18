@@ -9,8 +9,22 @@ permissions:
 
 jobs:
   frontend:
-    name: Pruebas de la demo web
+    name: Pruebas web y PostgreSQL
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: ecobogota
+          POSTGRES_USER: ecobogota
+          POSTGRES_PASSWORD: ecobogota_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ecobogota -d ecobogota"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - name: Obtener código
         uses: actions/checkout@v7
@@ -21,10 +35,14 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: Instalar dependencias
+        run: npm ci
       - name: Revisar sintaxis
         run: node --check app/app.js
-      - name: Probar flujos de reportes
-        run: node --test tests/frontend.test.cjs
+      - name: Probar cuentas y reportes
+        run: npm test
+        env:
+          DATABASE_URL: postgres://ecobogota:ecobogota_ci@127.0.0.1:5432/ecobogota
 
   backend:
     name: Pruebas del backend

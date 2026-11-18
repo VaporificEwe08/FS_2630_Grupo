@@ -23,6 +23,8 @@ a { color: inherit; }
 nav { display: flex; gap: 30px; color: #355846; font-size: 14px; font-weight: 650; }
 nav a { text-decoration: none; }
 nav a:hover, nav a:focus-visible { color: #0c8a58; text-decoration: underline; text-underline-offset: 5px; }
+.account-button { border: 1px solid #cfe1d3; border-radius: 8px; padding: 9px 12px; background: #eef7ed; color: #176a48; font-size: 12px; font-weight: 800; cursor: pointer; }
+.account-button:hover, .account-button:focus-visible { background: #dcefdc; }
 
 .hero { overflow: hidden; background: #124734; color: #fff; }
 .hero-grid { min-height: 390px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(360px, .8fr); align-items: center; gap: 30px; }
@@ -85,6 +87,7 @@ h2 { margin: 8px 0 8px; color: #183b2c; font-size: 27px; letter-spacing: -.04em;
 .submit-button { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 48px; padding: 0 17px; border: 0; border-radius: 9px; background: #147a55; color: #fff; cursor: pointer; font-size: 14px; font-weight: 800; }
 .submit-button:hover, .submit-button:focus-visible { background: #0f6243; }
 .submit-button span { font-size: 19px; }
+.submit-button:disabled { opacity: .6; cursor: wait; }
 .demo-note { margin: 17px 0 0; color: #8a9a8c; font-size: 11px; line-height: 1.5; }
 
 .reports-heading { display: flex; justify-content: space-between; align-items: end; gap: 15px; margin-bottom: 20px; }
@@ -140,6 +143,9 @@ h2 { margin: 8px 0 8px; color: #183b2c; font-size: 27px; letter-spacing: -.04em;
 .dialog-message { min-height: 14px; margin: 9px 0; color: #b34832; font-size: 12px; font-weight: 700; }
 .advance-button { width: 100%; min-height: 43px; padding: 0 16px; border: 0; border-radius: 9px; background: #147a55; color: #fff; cursor: pointer; font-size: 12px; font-weight: 800; }
 .advance-button:hover, .advance-button:focus-visible { background: #0f6243; }
+.auth-form { padding-top: 22px; }
+.auth-switch { display: block; margin: 16px auto 0; padding: 4px; border: 0; background: transparent; color: #157a51; cursor: pointer; font-size: 12px; font-weight: 750; }
+.auth-switch:hover, .auth-switch:focus-visible { text-decoration: underline; }
 .site-footer { background: #eaf0e8; }
 .footer-inner { min-height: 77px; display: flex; justify-content: space-between; align-items: center; gap: 20px; color: #68806c; font-size: 11px; }
 .footer-inner > span:first-child { color: #1c6445; font-size: 14px; font-weight: 800; }
@@ -155,7 +161,9 @@ h2 { margin: 8px 0 8px; color: #183b2c; font-size: 27px; letter-spacing: -.04em;
   .header-inner { min-height: 66px; }
   .brand { font-size: 17px; }
   .brand-mark { width: 34px; height: 34px; font-size: 21px; }
-  nav { gap: 12px; font-size: 11px; }
+  nav { gap: 10px; font-size: 11px; align-items: center; }
+  nav a:first-child { display: none; }
+  .account-button { padding: 7px; font-size: 11px; }
   .hero-grid { display: block; min-height: 0; }
   .hero-copy { padding-block: 44px 58px; }
   .hero-art { display: none; }

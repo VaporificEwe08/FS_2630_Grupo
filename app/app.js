@@ -1,5 +1,3 @@
-const STORAGE_KEY = "ecobogota-demo-reports-v1";
-
 const types = {
   BASURA_NO_RECOGIDA: { label: "Basura no recogida", symbol: "B" },
   CONTENEDOR_LLENO: { label: "Contenedor lleno", symbol: "C" },
@@ -13,20 +11,6 @@ const statuses = {
   RESUELTO: { label: "Resuelto", className: "status-resuelto" },
 };
 const statusOrder = ["RECIBIDO", "EN_GESTION", "RESUELTO"];
-const nextStatus = { RECIBIDO: "EN_GESTION", EN_GESTION: "RESUELTO" };
-
-const now = Date.now();
-const hoursAgo = (hours) => new Date(now - hours * 60 * 60 * 1000).toISOString();
-const demoEvent = (status, hours) => ({ status, at: hoursAgo(hours), actor: "Datos de ejemplo" });
-const exampleReports = [
-  { id: "demo-1", reference: "ECO-0101", type: "CONTENEDOR_LLENO", location: "Chapinero · Calle 60 con Carrera 7", description: "El contenedor de la esquina está lleno.", status: "RECIBIDO", createdAt: hoursAgo(2), history: [demoEvent("RECIBIDO", 2)] },
-  { id: "demo-2", reference: "ECO-0102", type: "ESCOMBROS", location: "Teusaquillo · Carrera 24 con Calle 45", description: "Hay escombros junto al andén.", status: "EN_GESTION", createdAt: hoursAgo(25), history: [demoEvent("RECIBIDO", 25), demoEvent("EN_GESTION", 22)] },
-  { id: "demo-3", reference: "ECO-0103", type: "BASURA_NO_RECOGIDA", location: "Suba · Avenida Boyacá con Calle 127", description: "Bolsas de residuos acumuladas desde ayer.", status: "RESUELTO", createdAt: hoursAgo(72), history: [demoEvent("RECIBIDO", 72), demoEvent("EN_GESTION", 48), demoEvent("RESUELTO", 20)] },
-];
-
-function referenceForId(id) {
-  return `ECO-${id.replace(/[^a-z0-9]/gi, "").slice(-8).toUpperCase().padStart(8, "0")}`;
-}
 
 function searchText(value) {
   return value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
@@ -36,49 +20,6 @@ function validCoordinates(coordinates) {
   return coordinates && Number.isFinite(coordinates.latitude) && Number.isFinite(coordinates.longitude) &&
     coordinates.latitude >= -90 && coordinates.latitude <= 90 &&
     coordinates.longitude >= -180 && coordinates.longitude <= 180;
-}
-
-function loadReports() {
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return [...exampleReports];
-    const parsed = JSON.parse(saved);
-    return Array.isArray(parsed) ? parsed.filter(isValidReport).map(normalizeReport) : [...exampleReports];
-  } catch {
-    return [...exampleReports];
-  }
-}
-
-function normalizeReport(report) {
-  const reference = typeof report.reference === "string" && /^ECO-[A-Z0-9]{4,12}$/.test(report.reference)
-    ? report.reference : referenceForId(report.id);
-  const coordinates = validCoordinates(report.coordinates) ? report.coordinates : null;
-  if (Array.isArray(report.history) && report.history.length > 0) {
-    const history = report.history.filter((event) => event && statuses[event.status] &&
-      (event.at === null || !Number.isNaN(Date.parse(event.at))) && typeof event.actor === "string");
-    if (history.length > 0 && history.at(-1).status === report.status) return { ...report, reference, coordinates, history };
-  }
-  // Los reportes guardados por la demo anterior no registraban las fechas de transición.
-  const history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
-  for (const status of statusOrder.slice(1, statusOrder.indexOf(report.status) + 1)) {
-    history.push({ status, at: null, actor: "Estado anterior" });
-  }
-  return { ...report, reference, coordinates, history };
-}
-
-function isValidReport(report) {
-  return report && typeof report.id === "string" && types[report.type] &&
-    typeof report.location === "string" && typeof report.description === "string" &&
-    statuses[report.status] && !Number.isNaN(Date.parse(report.createdAt));
-}
-
-function saveReports(reports) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(reports));
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function element(tag, className, text) {
@@ -114,7 +55,21 @@ function reportCard(report) {
   return card;
 }
 
-let reports = loadReports();
+let reports = [];
+let currentUser = null;
+let registering = false;
+async function request(url, options = {}) {
+  let response;
+  try { response = await fetch(url, { credentials: 'same-origin', ...options }); }
+  catch { throw new Error('No se pudo conectar con el servidor.'); }
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(payload.error || 'Ocurrió un error en el servidor');
+  return payload;
+}
+async function refreshReports() {
+  reports = (await request('/api/reports')).reports;
+  render();
+}
 const reportList = document.getElementById("reportList");
 const filter = document.getElementById("statusFilter");
 const search = document.getElementById("reportSearch");
@@ -165,9 +120,7 @@ function renderDetail(report) {
   }
   detail.append(timeline);
 
-  const next = nextStatus[report.status];
-  advanceButton.hidden = !next;
-  if (next) advanceButton.textContent = `Simular avance a ${statuses[next].label} →`;
+  advanceButton.hidden = true;
 }
 
 function openReport(id) {
@@ -194,13 +147,13 @@ function render() {
   if (visible.length === 0) {
     reportList.append(element("p", "empty-state", query
       ? "No hay reportes que coincidan con la búsqueda."
-      : "No hay reportes con este estado."));
+      : filter.value !== "TODOS" ? "No hay reportes con este estado." : "Aún no hay reportes. ¡Publica el primero!"));
   } else {
     reportList.append(...visible.map(reportCard));
   }
 }
 
-form.addEventListener("submit", (event) => {
+form.addEventListener("submit", async (event) => {
   event.preventDefault();
   const type = form.elements.type.value;
   const location = form.elements.location.value.trim();
@@ -209,8 +162,14 @@ form.addEventListener("submit", (event) => {
   const longitudeText = form.elements.longitude.value.trim();
   message.classList.remove("success");
 
-  if (!types[type] || !location || !description) {
-    message.textContent = "Completa los tres campos para publicar el reporte.";
+  if (!currentUser) {
+    message.textContent = "Crea una cuenta o inicia sesión para publicar.";
+    showAuth();
+    return;
+  }
+
+  if (!types[type] || location.length < 5 || description.length < 10) {
+    message.textContent = "Completa la ubicación y una descripción de al menos 10 caracteres.";
     return;
   }
 
@@ -223,25 +182,19 @@ form.addEventListener("submit", (event) => {
     }
   }
 
-  const report = {
-    id: typeof crypto !== "undefined" && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`,
-    type, location, description, coordinates, status: "RECIBIDO", createdAt: new Date().toISOString(),
-  };
-  report.reference = referenceForId(report.id);
-  report.history = [{ status: "RECIBIDO", at: report.createdAt, actor: "Sistema local" }];
-  const updated = [report, ...reports];
-  if (!saveReports(updated)) {
-    message.textContent = "No se pudo guardar el reporte en este navegador.";
-    return;
-  }
-  reports = updated;
-  form.reset();
-  locationMessage.textContent = "Se guardarán solo en este navegador al publicar el reporte.";
-  filter.value = "TODOS";
-  search.value = "";
-  render();
-  message.classList.add("success");
-  message.textContent = `Reporte ${report.reference} creado con estado Recibido.`;
+  const submit = form.querySelector('[type=submit]');
+  submit.disabled = true;
+  try {
+    const { report } = await request('/api/reports', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type, location, description, coordinates }) });
+    form.reset();
+    locationMessage.textContent = "Las coordenadas se publicarán con el reporte si las ingresas.";
+    filter.value = "TODOS";
+    search.value = "";
+    await refreshReports();
+    message.classList.add("success");
+    message.textContent = `Reporte ${report.reference} publicado.`;
+  } catch (error) { message.textContent = error.message; }
+  finally { submit.disabled = false; }
 });
 
 filter.addEventListener("change", render);
@@ -263,7 +216,7 @@ detectLocationButton.addEventListener("click", () => {
       }
       form.elements.latitude.value = coordinates.latitude.toFixed(6);
       form.elements.longitude.value = coordinates.longitude.toFixed(6);
-      locationMessage.textContent = "Coordenadas listas. Se guardarán aquí solo si publicas el reporte.";
+      locationMessage.textContent = "Coordenadas listas. Se publicarán con el reporte.";
     },
     () => {
       detectLocationButton.disabled = false;
@@ -274,23 +227,46 @@ detectLocationButton.addEventListener("click", () => {
 });
 document.getElementById("closeDialog").addEventListener("click", () => dialog.close());
 dialog.addEventListener("close", () => { selectedReportId = null; });
-advanceButton.addEventListener("click", () => {
-  const report = reports.find((item) => item.id === selectedReportId);
-  const next = report && nextStatus[report.status];
-  if (!next) return;
-  const updatedReport = {
-    ...report,
-    status: next,
-    history: [...report.history, { status: next, at: new Date().toISOString(), actor: "Simulación local" }],
-  };
-  const updated = reports.map((item) => item.id === report.id ? updatedReport : item);
-  if (!saveReports(updated)) {
-    detailMessage.textContent = "No se pudo guardar el cambio en este navegador.";
-    return;
-  }
-  reports = updated;
-  detailMessage.textContent = "";
-  render();
-  renderDetail(updatedReport);
+function setUser(user) {
+  currentUser = user;
+  document.getElementById('accountButton').textContent = user ? `${user.name} · Salir` : 'Ingresar';
+}
+function showAuth(register = false) {
+  registering = register;
+  document.getElementById('authTitle').textContent = register ? 'Crear cuenta' : 'Iniciar sesión';
+  document.getElementById('authSubmit').textContent = register ? 'Crear cuenta' : 'Ingresar';
+  document.getElementById('authSwitch').textContent = register ? '¿Ya tienes cuenta? Ingresa' : '¿No tienes cuenta? Regístrate';
+  document.getElementById('nameField').hidden = !register;
+  document.getElementById('authPassword').autocomplete = register ? 'new-password' : 'current-password';
+  document.getElementById('authMessage').textContent = '';
+  const authDialog = document.getElementById('authDialog');
+  if (!authDialog.open) authDialog.showModal();
+}
+document.getElementById('authForm').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const authForm = event.currentTarget;
+  const submit = document.getElementById('authSubmit');
+  submit.disabled = true;
+  try {
+    const { user } = await request('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: registering ? 'register' : 'login', name: authForm.elements.name.value, email: authForm.elements.email.value, password: authForm.elements.password.value }) });
+    setUser(user);
+    authForm.reset();
+    document.getElementById('authDialog').close();
+    message.textContent = `Sesión iniciada como ${user.name}. Ya puedes publicar.`;
+  } catch (error) { document.getElementById('authMessage').textContent = error.message; }
+  finally { submit.disabled = false; }
 });
-render();
+document.getElementById('accountButton').addEventListener('click', async () => {
+  if (!currentUser) { showAuth(); return; }
+  try {
+    await request('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'logout' }) });
+    setUser(null);
+    message.textContent = 'Sesión cerrada.';
+  } catch (error) { message.textContent = error.message; }
+});
+document.getElementById('authSwitch').addEventListener('click', () => showAuth(!registering));
+document.getElementById('closeAuth').addEventListener('click', () => document.getElementById('authDialog').close());
+Promise.allSettled([request('/api/auth'), refreshReports()]).then(([auth, list]) => {
+  if (auth.status === 'fulfilled') setUser(auth.value.user);
+  if (list.status === 'rejected') reportList.replaceChildren(element('p', 'empty-state', list.reason.message));
+});

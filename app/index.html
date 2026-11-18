@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#124734" />
-    <meta name="description" content="Prototipo local de reportes de residuos de EcoBogotá+." />
+    <meta name="description" content="Reportes ciudadanos de residuos de EcoBogotá+." />
     <title>EcoBogotá+ · Reportes ciudadanos</title>
     <link rel="stylesheet" href="styles.css" />
     <script src="app.js" defer></script>
@@ -19,6 +19,7 @@
         <nav aria-label="Navegación principal">
           <a href="#reportar">Crear reporte</a>
           <a href="#reportes">Ver reportes</a>
+          <button class="account-button" id="accountButton" type="button">Ingresar</button>
         </nav>
       </div>
     </header>
@@ -27,9 +28,9 @@
       <section class="hero">
         <div class="container hero-grid">
           <div class="hero-copy">
-            <span class="eyebrow"><span class="eyebrow-dot"></span> Prototipo local · Bogotá D. C.</span>
+            <span class="eyebrow"><span class="eyebrow-dot"></span> Reportes ciudadanos · Bogotá D. C.</span>
             <h1>Una ciudad más limpia empieza por hacer visible el problema.</h1>
-            <p>Reporta una incidencia de residuos y sigue su estado en un solo lugar. Esta demo muestra el primer flujo de EcoBogotá+.</p>
+            <p>Reporta una incidencia de residuos y sigue su estado en un solo lugar. Crea una cuenta para participar.</p>
             <a class="hero-action" href="#reportar">Crear un reporte <span aria-hidden="true">↗</span></a>
           </div>
           <div class="hero-art" aria-hidden="true">
@@ -44,7 +45,7 @@
       </section>
 
       <section class="stats container" aria-label="Resumen de reportes">
-        <div class="stat-card"><span class="stat-icon stat-icon-green" aria-hidden="true">◎</span><div><strong id="totalCount">0</strong><span>Reportes en la demo</span></div></div>
+        <div class="stat-card"><span class="stat-icon stat-icon-green" aria-hidden="true">◎</span><div><strong id="totalCount">0</strong><span>Reportes publicados</span></div></div>
         <div class="stat-card"><span class="stat-icon stat-icon-gold" aria-hidden="true">◷</span><div><strong id="openCount">0</strong><span>Por atender</span></div></div>
         <div class="stat-card"><span class="stat-icon stat-icon-blue" aria-hidden="true">✓</span><div><strong id="resolvedCount">0</strong><span>Resueltos</span></div></div>
       </section>
@@ -53,7 +54,7 @@
         <div class="form-panel" id="reportar">
           <span class="section-kicker">01 / PARTICIPA</span>
           <h2>Nuevo reporte</h2>
-          <p class="section-intro">Cuéntanos qué sucede. Tu reporte aparecerá de inmediato en la lista de esta demo.</p>
+          <p class="section-intro">Cuéntanos qué sucede. Tu reporte aparecerá en la lista pública. Necesitas una cuenta para publicarlo.</p>
           <form id="reportForm" novalidate>
             <div class="field">
               <label for="reportType">Tipo de incidencia <span aria-hidden="true">*</span></label>
@@ -84,7 +85,7 @@
                   <input id="reportLongitude" name="longitude" type="number" inputmode="decimal" step="any" min="-180" max="180" placeholder="-74.080000" />
                 </div>
               </div>
-              <p class="location-message" id="locationMessage" role="status" aria-live="polite">Se guardarán solo en este navegador al publicar el reporte.</p>
+              <p class="location-message" id="locationMessage" role="status" aria-live="polite">Las coordenadas se publicarán con el reporte si las ingresas.</p>
             </div>
             <div class="field">
               <label for="reportDescription">Descripción <span aria-hidden="true">*</span></label>
@@ -94,7 +95,7 @@
             <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
             <button class="submit-button" type="submit">Publicar reporte <span aria-hidden="true">→</span></button>
           </form>
-          <p class="demo-note">Demo: los reportes se guardan solo en este navegador. No se envían a una entidad.</p>
+          <p class="demo-note">Proyecto académico. Los reportes son públicos y no se envían a una entidad oficial. Evita publicar datos personales.</p>
         </div>
 
         <div class="reports-panel" id="reportes">
@@ -115,7 +116,7 @@
           <label class="search-label" for="reportSearch">Buscar un reporte</label>
           <input id="reportSearch" class="report-search" type="search" placeholder="Código, ubicación o descripción" autocomplete="off" />
           <div class="report-list" id="reportList" aria-live="polite"></div>
-          <p class="list-footnote">Abre un reporte para ver su seguimiento. Los casos de ejemplo son ficticios.</p>
+          <p class="list-footnote">Abre un reporte para ver su seguimiento. Se muestran los 100 más recientes.</p>
         </div>
       </section>
     </main>
@@ -130,10 +131,25 @@
       </div>
       <div id="reportDetail"></div>
       <div class="dialog-actions">
-        <p class="demo-note">Simulación local: los cambios de estado solo se guardan en este navegador.</p>
+        <p class="demo-note">El seguimiento muestra los estados registrados en la plataforma.</p>
         <p class="dialog-message" id="detailMessage" role="status" aria-live="polite"></p>
         <button class="advance-button" id="advanceStatus" type="button" hidden></button>
       </div>
+    </dialog>
+
+    <dialog class="detail-dialog auth-dialog" id="authDialog" aria-labelledby="authTitle">
+      <div class="dialog-heading">
+        <div><span class="section-kicker">TU CUENTA</span><h2 id="authTitle">Iniciar sesión</h2></div>
+        <button class="dialog-close" id="closeAuth" type="button" aria-label="Cerrar">×</button>
+      </div>
+      <form id="authForm" class="auth-form">
+        <div class="field" id="nameField" hidden><label for="authName">Nombre</label><input id="authName" name="name" maxlength="80" autocomplete="name" /></div>
+        <div class="field"><label for="authEmail">Correo</label><input id="authEmail" name="email" type="email" maxlength="254" autocomplete="email" required /></div>
+        <div class="field"><label for="authPassword">Contraseña</label><input id="authPassword" name="password" type="password" minlength="8" maxlength="128" autocomplete="current-password" required /></div>
+        <p class="form-message" id="authMessage" role="status" aria-live="polite"></p>
+        <button class="submit-button" id="authSubmit" type="submit">Ingresar</button>
+      </form>
+      <button class="auth-switch" id="authSwitch" type="button">¿No tienes cuenta? Regístrate</button>
     </dialog>
 
     <footer class="site-footer">
