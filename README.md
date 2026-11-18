@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/logo/icon-512.png" width="140" alt="EcoBogota+">
+</p>
+
 # EcoBogotá+
 
 ## Descripción
